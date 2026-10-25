@@ -35,7 +35,7 @@ def generate_ai_deck(topic: str, card_type: str, count: int, materials: List[str
             }}
             """
             response = client.models.generate_content(
-                model="gemini-3.8-flash",
+                model="gemini-3.5-flash-lite",
                 contents=prompt,
             )
             text = (response.text or "").strip()
@@ -244,7 +244,7 @@ def generate_ai_explanation(
                 Explain tailored precisely to the '{understanding_level}' level.
                 """
             response = client.models.generate_content(
-                model="gemini-3.8-flash",
+                model="gemini-3.5-flash-lite",
                 contents=prompt,
             )
             text = response.text.strip()
@@ -405,7 +405,7 @@ def generate_ai_feedback(concept: str, correct_answer: str, learner_restatement:
             IMPORTANT: Do not provide a model answer first. Directly address the student's restatement.
             """
             response = client.models.generate_content(
-                model="gemini-3.8-flash",
+                model="gemini-3.5-flash-lite",
                 contents=prompt,
             )
             text = response.text.strip()
