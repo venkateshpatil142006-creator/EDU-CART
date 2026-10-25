@@ -1,0 +1,1480 @@
+[
+  {
+    "id": "94bd9cd0-94d5-4637-ab97-8b6dc53f4b1f",
+    "title": "Python Fundamentals",
+    "description": "Presentation-ready sample deck covering essential Python concepts.",
+    "category": "Python",
+    "creator": "EduCards Demo",
+    "collaborators": [],
+    "created_at": "2026-10-22T16:58:03.686201+00:00",
+    "updated_at": "2026-10-22T16:58:03.686201+00:00",
+    "cards": [
+      {
+        "id": "cdf0c1e9-bf94-4e9f-be79-da2727bee3a7",
+        "deck_id": "94bd9cd0-94d5-4637-ab97-8b6dc53f4b1f",
+        "type": "flashcard",
+        "question": "What is the difference between a list and a tuple?",
+        "answer": "A list is mutable; a tuple is immutable.",
+        "options": null,
+        "explanation": "Lists can be changed after creation; tuples are immutable."
+      },
+      {
+        "id": "eb57d343-ca36-436a-be79-f25f6252086f",
+        "deck_id": "94bd9cd0-94d5-4637-ab97-8b6dc53f4b1f",
+        "type": "mcq",
+        "question": "Which Python type stores key-value pairs?",
+        "answer": "dict",
+        "options": [
+          "dict",
+          "list",
+          "tuple",
+          "set"
+        ],
+        "explanation": "A dictionary maps keys to values."
+      },
+      {
+        "id": "1ce0d0b9-2945-48bb-9ce0-3b6e0d89b0f5",
+        "deck_id": "94bd9cd0-94d5-4637-ab97-8b6dc53f4b1f",
+        "type": "flashcard",
+        "question": "What does a function help you do?",
+        "answer": "Reuse a named block of logic.",
+        "options": null,
+        "explanation": "Functions reduce repetition and improve organization."
+      },
+      {
+        "id": "e0e1ff1d-24b2-42ab-bc9a-e11f5888dc1a",
+        "deck_id": "94bd9cd0-94d5-4637-ab97-8b6dc53f4b1f",
+        "type": "mcq",
+        "question": "What does len([2, 4, 6]) return?",
+        "answer": "3",
+        "options": [
+          "2",
+          "3",
+          "6",
+          "4"
+        ],
+        "explanation": "The list contains three items."
+      },
+      {
+        "id": "2a35e186-f60f-4200-a8c6-56ce70306155",
+        "deck_id": "94bd9cd0-94d5-4637-ab97-8b6dc53f4b1f",
+        "type": "flashcard",
+        "question": "What is an exception?",
+        "answer": "An error or unusual event during execution.",
+        "options": null,
+        "explanation": "Exceptions can be caught and handled with try/except."
+      },
+      {
+        "id": "d67fb3cc-5a6f-4fa4-8eac-2b180e60df36",
+        "deck_id": "94bd9cd0-94d5-4637-ab97-8b6dc53f4b1f",
+        "type": "flashcard",
+        "question": "What does append() do to a list?",
+        "answer": "Adds an item to the end.",
+        "options": null,
+        "explanation": "append changes the existing list by adding one element."
+      },
+      {
+        "id": "f58bcd84-86d3-46f0-8c5e-177bec33aab7",
+        "deck_id": "94bd9cd0-94d5-4637-ab97-8b6dc53f4b1f",
+        "type": "flashcard",
+        "question": "What is a class?",
+        "answer": "A blueprint for creating objects.",
+        "options": null,
+        "explanation": "Classes define attributes and methods for their instances."
+      },
+      {
+        "id": "444b73b8-48d9-4105-ae31-229d664ff726",
+        "deck_id": "94bd9cd0-94d5-4637-ab97-8b6dc53f4b1f",
+        "type": "mcq",
+        "question": "Why use a virtual environment?",
+        "answer": "To isolate project dependencies.",
+        "options": [
+          "To isolate project dependencies",
+          "Increase monitor resolution",
+          "Replace Python",
+          "Encrypt source code"
+        ],
+        "explanation": "Separate environments help avoid dependency conflicts."
+      }
+    ]
+  },
+  {
+    "id": "ff9140e0-8991-411e-b2fe-453adc4b0ca1",
+    "title": "Linux Command Line Essentials",
+    "description": "Presentation-ready sample deck covering essential Linux concepts.",
+    "category": "Linux",
+    "creator": "EduCards Demo",
+    "collaborators": [],
+    "created_at": "2026-10-22T16:58:03.686336+00:00",
+    "updated_at": "2026-10-22T16:58:03.686336+00:00",
+    "cards": [
+      {
+        "id": "9ab3b97e-97b0-46b7-8209-81a889ebf42c",
+        "deck_id": "ff9140e0-8991-411e-b2fe-453adc4b0ca1",
+        "type": "mcq",
+        "question": "Which command prints the current directory?",
+        "answer": "pwd",
+        "options": [
+          "pwd",
+          "ls",
+          "cd",
+          "mkdir"
+        ],
+        "explanation": "pwd prints the current working directory."
+      },
+      {
+        "id": "4e7e9833-74b2-4b97-b896-8542eef90dea",
+        "deck_id": "ff9140e0-8991-411e-b2fe-453adc4b0ca1",
+        "type": "flashcard",
+        "question": "What does ls -la show?",
+        "answer": "Detailed entries including hidden files.",
+        "options": null,
+        "explanation": "-a includes hidden entries and -l uses long format."
+      },
+      {
+        "id": "4f20b6a7-df64-439f-870d-9709118cd889",
+        "deck_id": "ff9140e0-8991-411e-b2fe-453adc4b0ca1",
+        "type": "flashcard",
+        "question": "What does chmod change?",
+        "answer": "File permissions.",
+        "options": null,
+        "explanation": "chmod modifies read, write, and execute permissions."
+      },
+      {
+        "id": "08dc2da9-c37f-4332-88a6-f6d3477825a1",
+        "deck_id": "ff9140e0-8991-411e-b2fe-453adc4b0ca1",
+        "type": "mcq",
+        "question": "Which command searches text using patterns?",
+        "answer": "grep",
+        "options": [
+          "grep",
+          "touch",
+          "mv",
+          "pwd"
+        ],
+        "explanation": "grep prints lines matching a pattern."
+      },
+      {
+        "id": "e715581e-a830-41d6-a05e-74eea28558e5",
+        "deck_id": "ff9140e0-8991-411e-b2fe-453adc4b0ca1",
+        "type": "flashcard",
+        "question": "What is systemd commonly used for?",
+        "answer": "Managing system services and units.",
+        "options": null,
+        "explanation": "systemd is an init and service manager on many Linux systems."
+      },
+      {
+        "id": "7f311149-5dda-424b-b034-12d290afe9ac",
+        "deck_id": "ff9140e0-8991-411e-b2fe-453adc4b0ca1",
+        "type": "flashcard",
+        "question": "What does sudo do?",
+        "answer": "Runs a command with permitted elevated or other-user privileges.",
+        "options": null,
+        "explanation": "sudo policy controls which commands a user may run."
+      },
+      {
+        "id": "463a9534-6c2a-4f27-9564-377ea500e308",
+        "deck_id": "ff9140e0-8991-411e-b2fe-453adc4b0ca1",
+        "type": "flashcard",
+        "question": "Where are many system configuration files stored?",
+        "answer": "/etc",
+        "options": null,
+        "explanation": "The /etc directory commonly holds system-wide configuration."
+      },
+      {
+        "id": "b972192b-9f97-4d2d-aaff-bdfc2c234801",
+        "deck_id": "ff9140e0-8991-411e-b2fe-453adc4b0ca1",
+        "type": "mcq",
+        "question": "What does ps display?",
+        "answer": "Process information.",
+        "options": [
+          "Process information",
+          "Disk capacity only",
+          "File permissions",
+          "DNS records"
+        ],
+        "explanation": "ps reports a snapshot of running processes."
+      }
+    ]
+  },
+  {
+    "id": "3edc0e8f-7635-456d-b566-9daf25de2ec9",
+    "title": "Computer Networking Basics",
+    "description": "Presentation-ready sample deck covering essential Networking concepts.",
+    "category": "Networking",
+    "creator": "EduCards Demo",
+    "collaborators": [],
+    "created_at": "2026-10-22T16:58:03.687023+00:00",
+    "updated_at": "2026-10-22T16:58:03.687023+00:00",
+    "cards": [
+      {
+        "id": "5ee65d50-660c-463f-981a-31c3fc29678b",
+        "deck_id": "3edc0e8f-7635-456d-b566-9daf25de2ec9",
+        "type": "flashcard",
+        "question": "What is DNS used for?",
+        "answer": "Resolving domain names to DNS records such as IP addresses.",
+        "options": null,
+        "explanation": "DNS helps clients locate services by name."
+      },
+      {
+        "id": "5af6b75d-1cc7-4b3d-93d8-24446de2ce50",
+        "deck_id": "3edc0e8f-7635-456d-b566-9daf25de2ec9",
+        "type": "mcq",
+        "question": "What does HTTP 404 mean?",
+        "answer": "The requested resource was not found.",
+        "options": [
+          "The requested resource was not found",
+          "The request succeeded",
+          "The server is starting",
+          "Authentication succeeded"
+        ],
+        "explanation": "404 is the Not Found status code."
+      },
+      {
+        "id": "9eb86089-72c6-4683-b628-a82bcbfea9fe",
+        "deck_id": "3edc0e8f-7635-456d-b566-9daf25de2ec9",
+        "type": "flashcard",
+        "question": "What does TCP provide?",
+        "answer": "Reliable, ordered byte-stream delivery.",
+        "options": null,
+        "explanation": "TCP uses acknowledgements and retransmissions."
+      },
+      {
+        "id": "e16a0a48-a148-4e18-a680-ad2c017ebdb8",
+        "deck_id": "3edc0e8f-7635-456d-b566-9daf25de2ec9",
+        "type": "flashcard",
+        "question": "What is the purpose of an IP address?",
+        "answer": "To identify a network interface for IP communication.",
+        "options": null,
+        "explanation": "IP addresses help packets reach their destination."
+      },
+      {
+        "id": "24c0627a-1578-4fa7-8c6c-0fdee532c239",
+        "deck_id": "3edc0e8f-7635-456d-b566-9daf25de2ec9",
+        "type": "mcq",
+        "question": "What does HTTPS use to protect traffic?",
+        "answer": "TLS",
+        "options": [
+          "TLS",
+          "FTP",
+          "DHCP",
+          "HTML"
+        ],
+        "explanation": "TLS protects data in transit and helps authenticate the server."
+      },
+      {
+        "id": "5ad9b3f0-c2df-4a98-8e24-98ea7e57ac2f",
+        "deck_id": "3edc0e8f-7635-456d-b566-9daf25de2ec9",
+        "type": "flashcard",
+        "question": "What does a router do?",
+        "answer": "Forwards packets between networks.",
+        "options": null,
+        "explanation": "Routers choose a next hop based on routing information."
+      },
+      {
+        "id": "8b0d7d02-305f-4702-bb87-007ea60c7891",
+        "deck_id": "3edc0e8f-7635-456d-b566-9daf25de2ec9",
+        "type": "flashcard",
+        "question": "What is latency?",
+        "answer": "The time taken for data to travel or a response to arrive.",
+        "options": null,
+        "explanation": "Latency is delay; it differs from throughput."
+      },
+      {
+        "id": "32122cda-55cb-42f1-b916-baeef03be885",
+        "deck_id": "3edc0e8f-7635-456d-b566-9daf25de2ec9",
+        "type": "mcq",
+        "question": "What is DHCP commonly used for?",
+        "answer": "Automatically assigning network configuration to clients.",
+        "options": [
+          "Automatically assigning network configuration to clients",
+          "Encrypting web pages",
+          "Compiling programs",
+          "Storing database tables"
+        ],
+        "explanation": "DHCP can provide IP address, gateway, and DNS settings."
+      }
+    ]
+  },
+  {
+    "id": "b46b7504-ec8d-4d10-8836-60845941acf8",
+    "title": "Python \u2014 Practice Deck",
+    "description": "Offline practice deck for Python. Add a Gemini API key for live AI-generated content.",
+    "category": "Offline Practice",
+    "creator": "EduCards AI",
+    "collaborators": [],
+    "created_at": "2026-10-22T17:09:28.722213+00:00",
+    "updated_at": "2026-10-22T17:09:28.722240+00:00",
+    "cards": [
+      {
+        "id": "ec0c64ba-9656-4036-b3c7-7e11fc883425",
+        "deck_id": "b46b7504-ec8d-4d10-8836-60845941acf8",
+        "type": "flashcard",
+        "question": "What is the difference between a list and a tuple in Python?",
+        "answer": "A list is mutable; a tuple is immutable.",
+        "options": null,
+        "explanation": "Lists can be changed after creation, while tuples cannot have their elements reassigned."
+      },
+      {
+        "id": "166ede60-4686-4fc8-8196-731bbfa32973",
+        "deck_id": "b46b7504-ec8d-4d10-8836-60845941acf8",
+        "type": "mcq",
+        "question": "What does a Python dictionary store?",
+        "answer": "Key-value pairs.",
+        "options": [
+          "Only ordered numbers",
+          "Key-value pairs.",
+          "Only strings",
+          "Compiled machine code"
+        ],
+        "explanation": "A dictionary maps unique keys to values and is useful for looking up data by key."
+      },
+      {
+        "id": "13edf7a7-6fd8-4884-bce4-4c57c1577159",
+        "deck_id": "b46b7504-ec8d-4d10-8836-60845941acf8",
+        "type": "flashcard",
+        "question": "What is the purpose of a function?",
+        "answer": "To package reusable logic under a name.",
+        "options": null,
+        "explanation": "Functions reduce duplication and make programs easier to test and maintain."
+      },
+      {
+        "id": "b616439c-966b-4433-a022-bff5be26954d",
+        "deck_id": "b46b7504-ec8d-4d10-8836-60845941acf8",
+        "type": "mcq",
+        "question": "What does a Python virtual environment help isolate?",
+        "answer": "Project-specific Python packages.",
+        "options": [
+          "Project-specific Python packages.",
+          "The computer's hardware",
+          "The internet connection",
+          "Only image files"
+        ],
+        "explanation": "A virtual environment keeps dependencies for one project separate from other projects."
+      },
+      {
+        "id": "ba0c5cbf-0485-43ec-86d7-430689677d56",
+        "deck_id": "b46b7504-ec8d-4d10-8836-60845941acf8",
+        "type": "flashcard",
+        "question": "What is the purpose of a try/except block?",
+        "answer": "To handle exceptions.",
+        "options": null,
+        "explanation": "It lets a program respond to expected runtime errors instead of crashing without a controlled response."
+      },
+      {
+        "id": "8d876b62-37d9-41ba-924f-314070042e5a",
+        "deck_id": "b46b7504-ec8d-4d10-8836-60845941acf8",
+        "type": "mcq",
+        "question": "What does list.append(x) do?",
+        "answer": "Adds x to the end of a list.",
+        "options": [
+          "Adds x to the end of a list.",
+          "Sorts the list",
+          "Removes the first item",
+          "Converts it to a tuple"
+        ],
+        "explanation": "append modifies the existing list by adding one item at its end."
+      }
+    ]
+  },
+  {
+    "id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+    "title": "Java Programming \u2014 Practice Deck",
+    "description": "Offline practice deck for Java Programming. Add a Gemini API key for live AI-generated content.",
+    "category": "Offline Practice",
+    "creator": "EduCards AI",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:05:04.281271+00:00",
+    "updated_at": "2026-10-25T11:05:04.281295+00:00",
+    "cards": [
+      {
+        "id": "4c436da4-1029-4a3c-bad6-13bbb7429a79",
+        "deck_id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+        "type": "flashcard",
+        "question": "What is the central purpose of Java Programming?",
+        "answer": "Java Programming is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of Java Programming connects its definition to when and why it is used."
+      },
+      {
+        "id": "a91395d4-3cd7-4d88-a8d2-5bca7a958d7c",
+        "deck_id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+        "type": "flashcard",
+        "question": "How would you explain Java Programming to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Java Programming.",
+        "options": null,
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "9442330c-bc6d-4f24-a7c8-04c0afd73f3d",
+        "deck_id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+        "type": "flashcard",
+        "question": "Why is it useful to learn Java Programming?",
+        "answer": "It helps you reason about real problems where Java Programming is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "4fd4a16b-72b6-4fd0-b7b8-10277b1a7310",
+        "deck_id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+        "type": "flashcard",
+        "question": "What is a good way to revise Java Programming?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": null,
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      },
+      {
+        "id": "e7c03aa6-22fa-4b44-8903-1b3f4bd35dd2",
+        "deck_id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+        "type": "flashcard",
+        "question": "Review: What is the central purpose of Java Programming?",
+        "answer": "Java Programming is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of Java Programming connects its definition to when and why it is used."
+      },
+      {
+        "id": "08d4e1ba-fa17-4c5f-9739-1ea9c0989d34",
+        "deck_id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+        "type": "flashcard",
+        "question": "Review: How would you explain Java Programming to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Java Programming.",
+        "options": null,
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "d5fb69e0-d9c1-4d05-8796-193f7e26e325",
+        "deck_id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+        "type": "flashcard",
+        "question": "Review: Why is it useful to learn Java Programming?",
+        "answer": "It helps you reason about real problems where Java Programming is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "dbafa3ba-cfb1-4d5e-bb37-beba10d5d0d9",
+        "deck_id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+        "type": "flashcard",
+        "question": "Review: What is a good way to revise Java Programming?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": null,
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      },
+      {
+        "id": "50995089-c967-494e-b986-409d0f313c0d",
+        "deck_id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+        "type": "flashcard",
+        "question": "Review: What is the central purpose of Java Programming?",
+        "answer": "Java Programming is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of Java Programming connects its definition to when and why it is used."
+      },
+      {
+        "id": "19c9af34-fe5d-4fa8-b788-55f57e3b5b4e",
+        "deck_id": "ceea5717-5f9d-43ab-883e-669c63575b1d",
+        "type": "flashcard",
+        "question": "Review: How would you explain Java Programming to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Java Programming.",
+        "options": null,
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      }
+    ]
+  },
+  {
+    "id": "60cf1215-6b09-4e30-af1a-a3c0fde94ced",
+    "title": "Photosynthesis \u2014 Practice Deck",
+    "description": "Offline practice deck for Photosynthesis. Add a Gemini API key for live AI-generated content.",
+    "category": "Offline Practice",
+    "creator": "EduCards AI",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:07:16.630299+00:00",
+    "updated_at": "2026-10-25T11:07:16.630312+00:00",
+    "cards": [
+      {
+        "id": "4b951880-8215-4875-831c-3ec7a31df39b",
+        "deck_id": "60cf1215-6b09-4e30-af1a-a3c0fde94ced",
+        "type": "flashcard",
+        "question": "What is the central purpose of Photosynthesis?",
+        "answer": "Photosynthesis is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of Photosynthesis connects its definition to when and why it is used."
+      },
+      {
+        "id": "dc25f013-fd97-40be-ac74-05f61e0a9116",
+        "deck_id": "60cf1215-6b09-4e30-af1a-a3c0fde94ced",
+        "type": "flashcard",
+        "question": "How would you explain Photosynthesis to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Photosynthesis.",
+        "options": null,
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "231b6944-2ff9-46d2-afc2-b77746d63247",
+        "deck_id": "60cf1215-6b09-4e30-af1a-a3c0fde94ced",
+        "type": "flashcard",
+        "question": "Why is it useful to learn Photosynthesis?",
+        "answer": "It helps you reason about real problems where Photosynthesis is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      }
+    ]
+  },
+  {
+    "id": "b1d9bece-5bad-458e-9834-29b0fad7871f",
+    "title": "Math 101",
+    "description": "Basic algebra (Recovered with built-in practice questions)",
+    "category": "Math",
+    "creator": "Alice",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:07:17.095202+00:00",
+    "updated_at": "2026-10-25T11:07:17.095214+00:00",
+    "cards": [
+      {
+        "id": "ecab1f37-bdcf-4662-8938-153f474a2ef6",
+        "deck_id": "b1d9bece-5bad-458e-9834-29b0fad7871f",
+        "type": "flashcard",
+        "question": "What is the central purpose of Math?",
+        "answer": "Math is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of Math connects its definition to when and why it is used."
+      },
+      {
+        "id": "6f769f1c-c37f-45c7-9662-46a7262b5560",
+        "deck_id": "b1d9bece-5bad-458e-9834-29b0fad7871f",
+        "type": "mcq",
+        "question": "How would you explain Math to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Math.",
+        "options": [
+          "Definition, components, and practical example",
+          "Only advanced jargon",
+          "A list of unrelated facts",
+          "No examples or context"
+        ],
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "4569bf61-324c-43c8-876b-813bd88f9396",
+        "deck_id": "b1d9bece-5bad-458e-9834-29b0fad7871f",
+        "type": "flashcard",
+        "question": "Why is it useful to learn Math?",
+        "answer": "It helps you reason about real problems where Math is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "e39c4d5f-b7e1-4f8d-bb19-19e12c83df77",
+        "deck_id": "b1d9bece-5bad-458e-9834-29b0fad7871f",
+        "type": "mcq",
+        "question": "What is a good way to revise Math?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": [
+          "Active recall and spaced repetition",
+          "Read once and never revisit",
+          "Memorize headings only",
+          "Skip practice"
+        ],
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      },
+      {
+        "id": "b38b9abc-87db-4498-9221-0ecd7c83b0d8",
+        "deck_id": "b1d9bece-5bad-458e-9834-29b0fad7871f",
+        "type": "flashcard",
+        "question": "Review: What is the central purpose of Math?",
+        "answer": "Math is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of Math connects its definition to when and why it is used."
+      },
+      {
+        "id": "6b7957a3-e5ca-44a7-890d-529b51a194cf",
+        "deck_id": "b1d9bece-5bad-458e-9834-29b0fad7871f",
+        "type": "mcq",
+        "question": "Review: How would you explain Math to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Math.",
+        "options": [
+          "Definition, components, and practical example",
+          "Only advanced jargon",
+          "A list of unrelated facts",
+          "No examples or context"
+        ],
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "e9847c45-a5eb-46f5-8bf5-4f1841ce2a09",
+        "deck_id": "b1d9bece-5bad-458e-9834-29b0fad7871f",
+        "type": "flashcard",
+        "question": "Review: Why is it useful to learn Math?",
+        "answer": "It helps you reason about real problems where Math is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "fa1042fc-2bd4-4af6-b5b9-191a7d605531",
+        "deck_id": "b1d9bece-5bad-458e-9834-29b0fad7871f",
+        "type": "mcq",
+        "question": "Review: What is a good way to revise Math?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": [
+          "Active recall and spaced repetition",
+          "Read once and never revisit",
+          "Memorize headings only",
+          "Skip practice"
+        ],
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      }
+    ]
+  },
+  {
+    "id": "4e681e21-2027-4273-8d27-a38a251f5654",
+    "title": "Data Structures",
+    "description": "Core CS concepts",
+    "category": "Computer Science",
+    "creator": "Tester",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:07:17.120895+00:00",
+    "updated_at": "2026-10-25T11:07:17.120907+00:00",
+    "cards": [
+      {
+        "id": "50e25106-7d90-4d50-b107-db074767d123",
+        "deck_id": "4e681e21-2027-4273-8d27-a38a251f5654",
+        "type": "flashcard",
+        "question": "What is a Binary Search Tree?",
+        "answer": "A node-based binary tree data structure.",
+        "options": null,
+        "explanation": null
+      }
+    ]
+  },
+  {
+    "id": "d0aaec74-e91d-4508-bf4a-7909cc95e088",
+    "title": "Operating Systems",
+    "description": "OS deck (Recovered with built-in practice questions)",
+    "category": "CS",
+    "creator": "Tester",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:07:17.180437+00:00",
+    "updated_at": "2026-10-25T11:07:17.180451+00:00",
+    "cards": [
+      {
+        "id": "fe05f947-acc3-4c74-a486-597196011a41",
+        "deck_id": "d0aaec74-e91d-4508-bf4a-7909cc95e088",
+        "type": "flashcard",
+        "question": "What is the central purpose of CS?",
+        "answer": "CS is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of CS connects its definition to when and why it is used."
+      },
+      {
+        "id": "a28e50b9-c07f-4ba0-af0e-06badb70e1b1",
+        "deck_id": "d0aaec74-e91d-4508-bf4a-7909cc95e088",
+        "type": "mcq",
+        "question": "How would you explain CS to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of CS.",
+        "options": [
+          "Definition, components, and practical example",
+          "Only advanced jargon",
+          "A list of unrelated facts",
+          "No examples or context"
+        ],
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "26141a3a-77d5-44a6-acd0-36e2cfea49ac",
+        "deck_id": "d0aaec74-e91d-4508-bf4a-7909cc95e088",
+        "type": "flashcard",
+        "question": "Why is it useful to learn CS?",
+        "answer": "It helps you reason about real problems where CS is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "749ed429-0eec-470e-b3ad-761c7d8e2298",
+        "deck_id": "d0aaec74-e91d-4508-bf4a-7909cc95e088",
+        "type": "mcq",
+        "question": "What is a good way to revise CS?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": [
+          "Active recall and spaced repetition",
+          "Read once and never revisit",
+          "Memorize headings only",
+          "Skip practice"
+        ],
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      },
+      {
+        "id": "4921e0e6-d287-4e83-8321-303c1ad63391",
+        "deck_id": "d0aaec74-e91d-4508-bf4a-7909cc95e088",
+        "type": "flashcard",
+        "question": "Review: What is the central purpose of CS?",
+        "answer": "CS is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of CS connects its definition to when and why it is used."
+      },
+      {
+        "id": "bd0ebfa0-228a-40f9-8d95-e49b5ba176a3",
+        "deck_id": "d0aaec74-e91d-4508-bf4a-7909cc95e088",
+        "type": "mcq",
+        "question": "Review: How would you explain CS to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of CS.",
+        "options": [
+          "Definition, components, and practical example",
+          "Only advanced jargon",
+          "A list of unrelated facts",
+          "No examples or context"
+        ],
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "11094476-5575-44d8-9d49-56c906bd02d9",
+        "deck_id": "d0aaec74-e91d-4508-bf4a-7909cc95e088",
+        "type": "flashcard",
+        "question": "Review: Why is it useful to learn CS?",
+        "answer": "It helps you reason about real problems where CS is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "6f305909-1d21-4b7f-b6a9-b96957f0d44f",
+        "deck_id": "d0aaec74-e91d-4508-bf4a-7909cc95e088",
+        "type": "mcq",
+        "question": "Review: What is a good way to revise CS?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": [
+          "Active recall and spaced repetition",
+          "Read once and never revisit",
+          "Memorize headings only",
+          "Skip practice"
+        ],
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      }
+    ]
+  },
+  {
+    "id": "aed80fb2-e587-4893-b458-838673c78883",
+    "title": "Network Protocols",
+    "description": "Networking basics (Recovered with built-in practice questions)",
+    "category": "Networks",
+    "creator": "Tester",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:07:17.191279+00:00",
+    "updated_at": "2026-10-25T11:07:17.191289+00:00",
+    "cards": [
+      {
+        "id": "56abf84a-143b-4ea7-8372-e52ee58c65e3",
+        "deck_id": "aed80fb2-e587-4893-b458-838673c78883",
+        "type": "flashcard",
+        "question": "What is the main purpose of DNS?",
+        "answer": "Translate domain names into IP addresses and related records.",
+        "options": null,
+        "explanation": "DNS lets clients locate services using human-readable domain names."
+      },
+      {
+        "id": "3fa79276-0c85-47f6-93c6-99eab8fb7085",
+        "deck_id": "aed80fb2-e587-4893-b458-838673c78883",
+        "type": "mcq",
+        "question": "What does HTTP status code 404 mean?",
+        "answer": "The requested resource was not found.",
+        "options": [
+          "Resource not found",
+          "Request succeeded",
+          "Server permanently moved",
+          "Authentication succeeded"
+        ],
+        "explanation": "A server returns 404 when it cannot find the requested resource."
+      },
+      {
+        "id": "4a89e141-750d-4d3f-9a0b-6c55fbe3fd23",
+        "deck_id": "aed80fb2-e587-4893-b458-838673c78883",
+        "type": "flashcard",
+        "question": "What is the role of TCP?",
+        "answer": "Reliable, ordered byte-stream delivery between endpoints.",
+        "options": null,
+        "explanation": "TCP uses acknowledgements and retransmissions to provide reliable ordered delivery."
+      },
+      {
+        "id": "5f05d2fb-3a20-4e3a-b35e-dfa738497dfc",
+        "deck_id": "aed80fb2-e587-4893-b458-838673c78883",
+        "type": "mcq",
+        "question": "What is an IP address used for?",
+        "answer": "Identifying an interface on an IP network.",
+        "options": [
+          "Identifying a network interface",
+          "Naming Python variables",
+          "Encrypting passwords by itself",
+          "Formatting disks"
+        ],
+        "explanation": "IP addressing allows packets to be routed toward network interfaces."
+      },
+      {
+        "id": "845d8943-8f58-4481-a787-127a737470cc",
+        "deck_id": "aed80fb2-e587-4893-b458-838673c78883",
+        "type": "flashcard",
+        "question": "What does HTTPS add to HTTP?",
+        "answer": "TLS-protected communication and server authentication.",
+        "options": null,
+        "explanation": "HTTPS uses TLS to protect data in transit and authenticate the server certificate."
+      },
+      {
+        "id": "73224f64-622c-4f16-a6b4-173cfa3c41d5",
+        "deck_id": "aed80fb2-e587-4893-b458-838673c78883",
+        "type": "mcq",
+        "question": "What does a router do?",
+        "answer": "Forwards packets between networks.",
+        "options": [
+          "Forwards packets between networks",
+          "Compiles source code",
+          "Stores passwords",
+          "Renders HTML"
+        ],
+        "explanation": "Routers use routing information to choose where to forward IP packets."
+      },
+      {
+        "id": "bf98743a-fdaf-479f-b9a5-8f8738a1d79e",
+        "deck_id": "aed80fb2-e587-4893-b458-838673c78883",
+        "type": "flashcard",
+        "question": "Review: What is the main purpose of DNS?",
+        "answer": "Translate domain names into IP addresses and related records.",
+        "options": null,
+        "explanation": "DNS lets clients locate services using human-readable domain names."
+      },
+      {
+        "id": "32bf80da-ad76-41a5-99ac-a9c0bb7d661c",
+        "deck_id": "aed80fb2-e587-4893-b458-838673c78883",
+        "type": "mcq",
+        "question": "Review: What does HTTP status code 404 mean?",
+        "answer": "The requested resource was not found.",
+        "options": [
+          "Resource not found",
+          "Request succeeded",
+          "Server permanently moved",
+          "Authentication succeeded"
+        ],
+        "explanation": "A server returns 404 when it cannot find the requested resource."
+      }
+    ]
+  },
+  {
+    "id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+    "title": "Quantum Computing For Beginners \u2014 Practice Deck",
+    "description": "Offline practice deck for Quantum Computing for Beginners. Add a Gemini API key for live AI-generated content.",
+    "category": "Offline Practice",
+    "creator": "EduCards AI",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:22:20.947912+00:00",
+    "updated_at": "2026-10-25T11:22:20.947936+00:00",
+    "cards": [
+      {
+        "id": "2d893991-a190-4b00-bd88-af1350862859",
+        "deck_id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+        "type": "mcq",
+        "question": "What is the central purpose of Quantum Computing for Beginners?",
+        "answer": "Quantum Computing for Beginners is studied to understand its core concepts, practical use, and limitations.",
+        "options": [
+          "Understand the core concepts of Quantum Computing for Beginners",
+          "Ignore the problem being solved",
+          "Avoid testing assumptions",
+          "Use it without understanding it"
+        ],
+        "explanation": "A good explanation of Quantum Computing for Beginners connects its definition to when and why it is used."
+      },
+      {
+        "id": "af25ef46-2b1d-47c1-99ea-f835bb6aa6e8",
+        "deck_id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+        "type": "mcq",
+        "question": "How would you explain Quantum Computing for Beginners to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Quantum Computing for Beginners.",
+        "options": [
+          "Definition, components, and practical example",
+          "Only advanced jargon",
+          "A list of unrelated facts",
+          "No examples or context"
+        ],
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "7344aa86-9f69-4bdc-816a-17740d52e683",
+        "deck_id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+        "type": "mcq",
+        "question": "Why is it useful to learn Quantum Computing for Beginners?",
+        "answer": "It helps you reason about real problems where Quantum Computing for Beginners is applied.",
+        "options": [
+          "It helps solve relevant problems",
+          "It removes the need to think",
+          "It guarantees every solution is correct",
+          "It makes testing unnecessary"
+        ],
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "97fd29f7-6bc6-4ad2-980f-9d5dc6f97f4b",
+        "deck_id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+        "type": "mcq",
+        "question": "What is a good way to revise Quantum Computing for Beginners?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": [
+          "Active recall and spaced repetition",
+          "Read once and never revisit",
+          "Memorize headings only",
+          "Skip practice"
+        ],
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      },
+      {
+        "id": "5ae15b92-01fa-49d6-8370-8613c2dead1a",
+        "deck_id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+        "type": "mcq",
+        "question": "Review: What is the central purpose of Quantum Computing for Beginners?",
+        "answer": "Quantum Computing for Beginners is studied to understand its core concepts, practical use, and limitations.",
+        "options": [
+          "Understand the core concepts of Quantum Computing for Beginners",
+          "Ignore the problem being solved",
+          "Avoid testing assumptions",
+          "Use it without understanding it"
+        ],
+        "explanation": "A good explanation of Quantum Computing for Beginners connects its definition to when and why it is used."
+      },
+      {
+        "id": "845328ad-c5e2-4854-8c9b-e38f780e33c2",
+        "deck_id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+        "type": "mcq",
+        "question": "Review: How would you explain Quantum Computing for Beginners to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Quantum Computing for Beginners.",
+        "options": [
+          "Definition, components, and practical example",
+          "Only advanced jargon",
+          "A list of unrelated facts",
+          "No examples or context"
+        ],
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "31def173-0279-41f6-9407-5bc0f3d5d6b8",
+        "deck_id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+        "type": "mcq",
+        "question": "Review: Why is it useful to learn Quantum Computing for Beginners?",
+        "answer": "It helps you reason about real problems where Quantum Computing for Beginners is applied.",
+        "options": [
+          "It helps solve relevant problems",
+          "It removes the need to think",
+          "It guarantees every solution is correct",
+          "It makes testing unnecessary"
+        ],
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "a97574b3-84bc-4aea-9054-cb26dc528504",
+        "deck_id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+        "type": "mcq",
+        "question": "Review: What is a good way to revise Quantum Computing for Beginners?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": [
+          "Active recall and spaced repetition",
+          "Read once and never revisit",
+          "Memorize headings only",
+          "Skip practice"
+        ],
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      },
+      {
+        "id": "a008c52e-21aa-45b0-b4a1-c72f2986606b",
+        "deck_id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+        "type": "mcq",
+        "question": "Review: What is the central purpose of Quantum Computing for Beginners?",
+        "answer": "Quantum Computing for Beginners is studied to understand its core concepts, practical use, and limitations.",
+        "options": [
+          "Understand the core concepts of Quantum Computing for Beginners",
+          "Ignore the problem being solved",
+          "Avoid testing assumptions",
+          "Use it without understanding it"
+        ],
+        "explanation": "A good explanation of Quantum Computing for Beginners connects its definition to when and why it is used."
+      },
+      {
+        "id": "abf66ae3-6c7f-4060-949f-0881811c57f9",
+        "deck_id": "ad810bf0-4136-4439-8296-97ebdbd454a5",
+        "type": "mcq",
+        "question": "Review: How would you explain Quantum Computing for Beginners to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Quantum Computing for Beginners.",
+        "options": [
+          "Definition, components, and practical example",
+          "Only advanced jargon",
+          "A list of unrelated facts",
+          "No examples or context"
+        ],
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      }
+    ]
+  },
+  {
+    "id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+    "title": "Quantum Computing \u2014 Unique Test 2510 \u2014 Practice Deck",
+    "description": "Offline practice deck for Quantum Computing \u2014 Unique Test 2510. Add a Gemini API key for live AI-generated content.",
+    "category": "Offline Practice",
+    "creator": "EduCards AI",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:29:22.774991+00:00",
+    "updated_at": "2026-10-25T11:29:22.775015+00:00",
+    "cards": [
+      {
+        "id": "5cf27991-6a3c-4d4a-b9f3-502d89850eb6",
+        "deck_id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+        "type": "flashcard",
+        "question": "What is the central purpose of Quantum Computing \u2014 Unique Test 2510?",
+        "answer": "Quantum Computing \u2014 Unique Test 2510 is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of Quantum Computing \u2014 Unique Test 2510 connects its definition to when and why it is used."
+      },
+      {
+        "id": "eafd818f-bc3d-486b-a095-13c30c462097",
+        "deck_id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+        "type": "flashcard",
+        "question": "How would you explain Quantum Computing \u2014 Unique Test 2510 to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Quantum Computing \u2014 Unique Test 2510.",
+        "options": null,
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "6fdf201a-6e21-457d-aa2f-991cc55cf7b7",
+        "deck_id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+        "type": "flashcard",
+        "question": "Why is it useful to learn Quantum Computing \u2014 Unique Test 2510?",
+        "answer": "It helps you reason about real problems where Quantum Computing \u2014 Unique Test 2510 is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "375e4b9c-03af-44f1-ae86-107d9235bd96",
+        "deck_id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+        "type": "flashcard",
+        "question": "What is a good way to revise Quantum Computing \u2014 Unique Test 2510?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": null,
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      },
+      {
+        "id": "e8f30241-4114-4aec-af11-5f287f1a6380",
+        "deck_id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+        "type": "flashcard",
+        "question": "Review: What is the central purpose of Quantum Computing \u2014 Unique Test 2510?",
+        "answer": "Quantum Computing \u2014 Unique Test 2510 is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of Quantum Computing \u2014 Unique Test 2510 connects its definition to when and why it is used."
+      },
+      {
+        "id": "3a65a726-ada3-4cf9-a7b7-f2593ee17e8f",
+        "deck_id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+        "type": "flashcard",
+        "question": "Review: How would you explain Quantum Computing \u2014 Unique Test 2510 to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Quantum Computing \u2014 Unique Test 2510.",
+        "options": null,
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "2edf02c7-856c-4959-9216-e82643004a70",
+        "deck_id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+        "type": "flashcard",
+        "question": "Review: Why is it useful to learn Quantum Computing \u2014 Unique Test 2510?",
+        "answer": "It helps you reason about real problems where Quantum Computing \u2014 Unique Test 2510 is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "4dbf8a9b-ca84-458c-9afc-23f8816722ee",
+        "deck_id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+        "type": "flashcard",
+        "question": "Review: What is a good way to revise Quantum Computing \u2014 Unique Test 2510?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": null,
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      },
+      {
+        "id": "3b0cb53d-4139-4b77-a642-735f781ea9d3",
+        "deck_id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+        "type": "flashcard",
+        "question": "Review: What is the central purpose of Quantum Computing \u2014 Unique Test 2510?",
+        "answer": "Quantum Computing \u2014 Unique Test 2510 is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of Quantum Computing \u2014 Unique Test 2510 connects its definition to when and why it is used."
+      },
+      {
+        "id": "8da5d048-eef9-4683-8b07-6b959ddfb13f",
+        "deck_id": "fb3e6948-da58-4638-8c73-75c77205d1a1",
+        "type": "flashcard",
+        "question": "Review: How would you explain Quantum Computing \u2014 Unique Test 2510 to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Quantum Computing \u2014 Unique Test 2510.",
+        "options": null,
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      }
+    ]
+  },
+  {
+    "id": "841b8d43-da42-4396-9d50-bf1f337d8b70",
+    "title": "Photosynthesis \u2014 Practice Deck",
+    "description": "Offline practice deck for Photosynthesis. Add a Gemini API key for live AI-generated content.",
+    "category": "Offline Practice",
+    "creator": "EduCards AI",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:35:58.459127+00:00",
+    "updated_at": "2026-10-25T11:35:58.459138+00:00",
+    "cards": [
+      {
+        "id": "d7118a9d-24f6-482f-af3e-29c9dfd77c88",
+        "deck_id": "841b8d43-da42-4396-9d50-bf1f337d8b70",
+        "type": "flashcard",
+        "question": "What is the central purpose of Photosynthesis?",
+        "answer": "Photosynthesis is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of Photosynthesis connects its definition to when and why it is used."
+      },
+      {
+        "id": "d20b6f30-d8c2-4e53-b547-cba0241c0745",
+        "deck_id": "841b8d43-da42-4396-9d50-bf1f337d8b70",
+        "type": "flashcard",
+        "question": "How would you explain Photosynthesis to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of Photosynthesis.",
+        "options": null,
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "064768a4-b465-4d88-af82-292ec4f7e491",
+        "deck_id": "841b8d43-da42-4396-9d50-bf1f337d8b70",
+        "type": "flashcard",
+        "question": "Why is it useful to learn Photosynthesis?",
+        "answer": "It helps you reason about real problems where Photosynthesis is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      }
+    ]
+  },
+  {
+    "id": "a944c8e8-0f63-44f9-820d-b4ec357cdd31",
+    "title": "Math 101",
+    "description": "Basic algebra (Recovered with built-in practice questions)",
+    "category": "Math",
+    "creator": "Alice",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:35:58.925247+00:00",
+    "updated_at": "2026-10-25T11:35:58.925261+00:00",
+    "cards": [
+      {
+        "id": "a516bd43-8ae7-4c89-aa66-237d0f77a726",
+        "deck_id": "a944c8e8-0f63-44f9-820d-b4ec357cdd31",
+        "type": "flashcard",
+        "question": "What is the derivative of f(x) = e^(2x) with respect to x?",
+        "answer": "2e^(2x)",
+        "options": null,
+        "explanation": "According to the chain rule, d/dx[e^(g(x))] = g'(x) * e^(g(x)). Since the derivative of 2x is 2, the derivative is 2e^(2x)."
+      },
+      {
+        "id": "7001415e-70ab-4a7d-be01-f7b3034a565d",
+        "deck_id": "a944c8e8-0f63-44f9-820d-b4ec357cdd31",
+        "type": "mcq",
+        "question": "In a right-angled triangle, if the legs have lengths of 6 and 8 units, what is the length of the hypotenuse?",
+        "answer": "10 units",
+        "options": [
+          "10 units",
+          "12 units",
+          "14 units",
+          "\u221a28 units"
+        ],
+        "explanation": "By the Pythagorean theorem: a\u00b2 + b\u00b2 = c\u00b2. Here, 6\u00b2 + 8\u00b2 = 36 + 64 = 100. Taking the square root of 100 gives a hypotenuse of 10 units."
+      },
+      {
+        "id": "c900d4c6-4a3b-4a65-af9a-69626905bfb8",
+        "deck_id": "a944c8e8-0f63-44f9-820d-b4ec357cdd31",
+        "type": "flashcard",
+        "question": "State the quadratic formula used to solve equations of the form ax\u00b2 + bx + c = 0.",
+        "answer": "x = (-b \u00b1 \u221a(b\u00b2 - 4ac)) / (2a)",
+        "options": null,
+        "explanation": "The quadratic formula calculates the roots of any second-degree polynomial equation. The term (b\u00b2 - 4ac) under the radical is called the discriminant."
+      },
+      {
+        "id": "8d0e29dd-9f5e-4cc3-bd14-72c93fbba082",
+        "deck_id": "a944c8e8-0f63-44f9-820d-b4ec357cdd31",
+        "type": "mcq",
+        "question": "Which of the following numbers is the only even prime number?",
+        "answer": "2",
+        "options": [
+          "2",
+          "0",
+          "4",
+          "There are no even prime numbers"
+        ],
+        "explanation": "A prime number is a positive integer greater than 1 with no positive divisors other than 1 and itself. The number 2 meets this definition, and all other even numbers are divisible by 2 and therefore composite."
+      },
+      {
+        "id": "6a773588-fd1c-490a-bebf-5602ccc8f0ab",
+        "deck_id": "a944c8e8-0f63-44f9-820d-b4ec357cdd31",
+        "type": "flashcard",
+        "question": "What is the fundamental Pythagorean trigonometric identity relating sine and cosine?",
+        "answer": "sin\u00b2(\u03b8) + cos\u00b2(\u03b8) = 1",
+        "options": null,
+        "explanation": "This identity follows directly from the Pythagorean theorem applied to a unit circle, where any point on the circle has coordinates (cos(\u03b8), sin(\u03b8)) and radius 1."
+      },
+      {
+        "id": "f45d19c2-6ddf-41be-b50b-698866c62c62",
+        "deck_id": "a944c8e8-0f63-44f9-820d-b4ec357cdd31",
+        "type": "mcq",
+        "question": "If a fair six-sided die is rolled once, what is the probability of rolling a number strictly greater than 4?",
+        "answer": "1/3",
+        "options": [
+          "1/3",
+          "1/2",
+          "1/6",
+          "2/3"
+        ],
+        "explanation": "The outcomes strictly greater than 4 on a standard die are 5 and 6 (2 favorable outcomes). The total number of possible outcomes is 6. Thus, P = 2/6 = 1/3."
+      },
+      {
+        "id": "12633b6c-7d71-4574-8448-91c549eab3c2",
+        "deck_id": "a944c8e8-0f63-44f9-820d-b4ec357cdd31",
+        "type": "flashcard",
+        "question": "In linear algebra, what does it mean for a square matrix to be singular?",
+        "answer": "Its determinant is zero, meaning it does not possess an inverse.",
+        "options": null,
+        "explanation": "A matrix is invertible if and only if its determinant is non-zero. When the determinant is zero, the transformation collapses dimensions and cannot be inverted."
+      },
+      {
+        "id": "adfb6ce9-2a5b-4db7-82e5-e0aaab769aba",
+        "deck_id": "a944c8e8-0f63-44f9-820d-b4ec357cdd31",
+        "type": "mcq",
+        "question": "What is the value of log\u2082(64)?",
+        "answer": "6",
+        "options": [
+          "6",
+          "8",
+          "5",
+          "4"
+        ],
+        "explanation": "The logarithm log_b(y) = x asks what power 'b' must be raised to in order to equal 'y'. Since 2\u2076 = 64, log\u2082(64) = 6."
+      }
+    ]
+  },
+  {
+    "id": "525b6e68-b5d7-497e-b365-48cbe90d9e46",
+    "title": "Data Structures",
+    "description": "Core CS concepts",
+    "category": "Computer Science",
+    "creator": "Tester",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:35:58.950355+00:00",
+    "updated_at": "2026-10-25T11:35:58.950366+00:00",
+    "cards": [
+      {
+        "id": "b19c8798-d96a-40ab-85b5-65f88d80bd3f",
+        "deck_id": "525b6e68-b5d7-497e-b365-48cbe90d9e46",
+        "type": "flashcard",
+        "question": "What is a Binary Search Tree?",
+        "answer": "A node-based binary tree data structure.",
+        "options": null,
+        "explanation": null
+      }
+    ]
+  },
+  {
+    "id": "93488b24-3449-4ce8-aafe-5b1b6e5daa7b",
+    "title": "Operating Systems",
+    "description": "OS deck (Recovered with built-in practice questions)",
+    "category": "CS",
+    "creator": "Tester",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:35:59.016945+00:00",
+    "updated_at": "2026-10-25T11:35:59.016959+00:00",
+    "cards": [
+      {
+        "id": "13a37604-c2ce-4cb6-bfd6-5268e8d6944b",
+        "deck_id": "93488b24-3449-4ce8-aafe-5b1b6e5daa7b",
+        "type": "flashcard",
+        "question": "What is the central purpose of CS?",
+        "answer": "CS is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of CS connects its definition to when and why it is used."
+      },
+      {
+        "id": "e1df00a6-c583-4feb-9d22-135fc6fdf5cb",
+        "deck_id": "93488b24-3449-4ce8-aafe-5b1b6e5daa7b",
+        "type": "mcq",
+        "question": "How would you explain CS to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of CS.",
+        "options": [
+          "Definition, components, and practical example",
+          "Only advanced jargon",
+          "A list of unrelated facts",
+          "No examples or context"
+        ],
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "79a5349f-948b-4674-a71e-b4c6780ac051",
+        "deck_id": "93488b24-3449-4ce8-aafe-5b1b6e5daa7b",
+        "type": "flashcard",
+        "question": "Why is it useful to learn CS?",
+        "answer": "It helps you reason about real problems where CS is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "86b1c0dd-334a-4d17-a837-8d9d0f875506",
+        "deck_id": "93488b24-3449-4ce8-aafe-5b1b6e5daa7b",
+        "type": "mcq",
+        "question": "What is a good way to revise CS?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": [
+          "Active recall and spaced repetition",
+          "Read once and never revisit",
+          "Memorize headings only",
+          "Skip practice"
+        ],
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      },
+      {
+        "id": "9815b7cf-8877-45af-bc11-9be582e963ff",
+        "deck_id": "93488b24-3449-4ce8-aafe-5b1b6e5daa7b",
+        "type": "flashcard",
+        "question": "Review: What is the central purpose of CS?",
+        "answer": "CS is studied to understand its core concepts, practical use, and limitations.",
+        "options": null,
+        "explanation": "A good explanation of CS connects its definition to when and why it is used."
+      },
+      {
+        "id": "bbdd49fa-7a21-4f5c-8bd5-42264cc3515f",
+        "deck_id": "93488b24-3449-4ce8-aafe-5b1b6e5daa7b",
+        "type": "mcq",
+        "question": "Review: How would you explain CS to a beginner?",
+        "answer": "Start with its definition, explain the main components, then give a practical example of CS.",
+        "options": [
+          "Definition, components, and practical example",
+          "Only advanced jargon",
+          "A list of unrelated facts",
+          "No examples or context"
+        ],
+        "explanation": "A clear explanation moves from the basic idea to components and then a concrete example."
+      },
+      {
+        "id": "731561a9-6d89-4e4f-bafe-5fda283b1f97",
+        "deck_id": "93488b24-3449-4ce8-aafe-5b1b6e5daa7b",
+        "type": "flashcard",
+        "question": "Review: Why is it useful to learn CS?",
+        "answer": "It helps you reason about real problems where CS is applied.",
+        "options": null,
+        "explanation": "Understanding use cases and trade-offs makes it easier to apply a concept appropriately."
+      },
+      {
+        "id": "5e9c04c8-d186-4743-b7a7-d14f516c16d2",
+        "deck_id": "93488b24-3449-4ce8-aafe-5b1b6e5daa7b",
+        "type": "mcq",
+        "question": "Review: What is a good way to revise CS?",
+        "answer": "Use active recall, practice questions, and spaced repetition.",
+        "options": [
+          "Active recall and spaced repetition",
+          "Read once and never revisit",
+          "Memorize headings only",
+          "Skip practice"
+        ],
+        "explanation": "Retrieving information from memory and revisiting it over time improves retention."
+      }
+    ]
+  },
+  {
+    "id": "3bf21ac9-ccb5-460e-b463-34a20e9c6220",
+    "title": "Network Protocols",
+    "description": "Networking basics (Recovered with built-in practice questions)",
+    "category": "Networks",
+    "creator": "Tester",
+    "collaborators": [],
+    "created_at": "2026-10-25T11:35:59.029119+00:00",
+    "updated_at": "2026-10-25T11:35:59.029130+00:00",
+    "cards": [
+      {
+        "id": "23cd8d73-62f5-4001-83ba-981e3dd835a6",
+        "deck_id": "3bf21ac9-ccb5-460e-b463-34a20e9c6220",
+        "type": "flashcard",
+        "question": "What are the seven layers of the OSI model, ordered from Layer 1 to Layer 7?",
+        "answer": "1. Physical, 2. Data Link, 3. Network, 4. Transport, 5. Session, 6. Presentation, 7. Application.",
+        "options": null,
+        "explanation": "A common mnemonic to remember the OSI layers from bottom to top is 'Please Do Not Throw Sausage Pizza Away'."
+      },
+      {
+        "id": "9635f89d-a48d-43a4-ac79-3afde6e9ffa7",
+        "deck_id": "3bf21ac9-ccb5-460e-b463-34a20e9c6220",
+        "type": "mcq",
+        "question": "Which standard transport-layer port is used by HTTPS for secure web traffic?",
+        "answer": "Port 443",
+        "options": [
+          "Port 22",
+          "Port 80",
+          "Port 443",
+          "Port 8080"
+        ],
+        "explanation": "HTTPS runs over port 443 by default using TLS/SSL encryption. Port 80 is used for unencrypted HTTP, port 22 is used for SSH, and 8080 is often used for alternate web proxy servers."
+      },
+      {
+        "id": "351abfc0-f4bf-4aa5-9514-873df512dc59",
+        "deck_id": "3bf21ac9-ccb5-460e-b463-34a20e9c6220",
+        "type": "flashcard",
+        "question": "What is the primary difference in reliability between TCP and UDP?",
+        "answer": "TCP is connection-oriented and guarantees ordered, error-checked delivery via handshakes and acknowledgments, whereas UDP is connectionless and offers no delivery or ordering guarantees, trading reliability for lower latency.",
+        "options": null,
+        "explanation": "TCP is ideal for applications requiring data integrity (e.g., HTTP, file transfer), while UDP is favored for real-time applications where speed is critical (e.g., DNS, VoIP, streaming)."
+      },
+      {
+        "id": "2ceb7b5e-825b-4e46-89fe-ce1902e8208f",
+        "deck_id": "3bf21ac9-ccb5-460e-b463-34a20e9c6220",
+        "type": "mcq",
+        "question": "How many usable host IP addresses are available in a standard IPv4 subnet with a /24 prefix (255.255.255.0)?",
+        "answer": "254",
+        "options": [
+          "256",
+          "254",
+          "255",
+          "128"
+        ],
+        "explanation": "A /24 subnet has 8 host bits, providing 2^8 = 256 total addresses. Two addresses are reserved: the network identifier (all host bits 0) and the broadcast address (all host bits 1), leaving 254 usable host addresses."
+      },
+      {
+        "id": "7171f1d7-aa1b-4a9c-b472-2a551ccd6425",
+        "deck_id": "3bf21ac9-ccb5-460e-b463-34a20e9c6220",
+        "type": "flashcard",
+        "question": "What is the primary function of the Domain Name System (DNS)?",
+        "answer": "DNS resolves human-readable domain names (such as example.com) into machine-readable IP addresses (such as 93.184.216.34).",
+        "options": null,
+        "explanation": "DNS acts as the phonebook of the Internet, allowing devices to locate and connect to network resources without users needing to memorize numerical IP addresses."
+      },
+      {
+        "id": "89702059-72f0-4d6a-b8e9-62fa603aba40",
+        "deck_id": "3bf21ac9-ccb5-460e-b463-34a20e9c6220",
+        "type": "mcq",
+        "question": "At which layer of the OSI model does a traditional network switch operate?",
+        "answer": "Layer 2 (Data Link Layer)",
+        "options": [
+          "Layer 1 (Physical Layer)",
+          "Layer 2 (Data Link Layer)",
+          "Layer 3 (Network Layer)",
+          "Layer 4 (Transport Layer)"
+        ],
+        "explanation": "Traditional switches operate at Layer 2 (Data Link) using MAC addresses to forward frames. Routers operate at Layer 3 (Network) using IP addresses to route packets."
+      },
+      {
+        "id": "b7de00ce-a6f6-4268-ae60-3df3659e5aa8",
+        "deck_id": "3bf21ac9-ccb5-460e-b463-34a20e9c6220",
+        "type": "flashcard",
+        "question": "What is the role of the Address Resolution Protocol (ARP)?",
+        "answer": "ARP is used to discover the physical Layer 2 MAC address associated with a given Layer 3 IPv4 address on a local network segment.",
+        "options": null,
+        "explanation": "Before an IP packet can be encapsulated into an Ethernet frame and transmitted locally, the sender queries the local network via an ARP broadcast to determine the recipient's MAC address."
+      },
+      {
+        "id": "87a8f111-74c8-4caa-8b66-7620b2b2348e",
+        "deck_id": "3bf21ac9-ccb5-460e-b463-34a20e9c6220",
+        "type": "mcq",
+        "question": "Which routing protocol is the standard Exterior Gateway Protocol (EGP) used to route traffic between different Autonomous Systems (AS) across the global Internet?",
+        "answer": "BGP (Border Gateway Protocol)",
+        "options": [
+          "OSPF (Open Shortest Path First)",
+          "RIP (Routing Information Protocol)",
+          "BGP (Border Gateway Protocol)",
+          "ICMP (Internet Control Message Protocol)"
+        ],
+        "explanation": "BGP is the de facto path-vector protocol used to exchange routing and reachability information between independent Autonomous Systems across the Internet. OSPF and RIP are Interior Gateway Protocols (IGPs)."
+      }
+    ]
+  }
+]

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduCards - Collaborative Study Assistant</title>
+  <link rel="stylesheet" href="/static/style.css?v=20261022fix2">
+</head>
+<body>
+  <header>
+    <div class="logo">Edu<span>Cards</span></div>
+    <nav>
+      <button onclick="switchView('dashboard')" id="nav-dashboard" class="active">Dashboard</button>
+      <button onclick="switchView('decks')" id="nav-decks">Study Decks</button>
+      <button onclick="switchView('materials')" id="nav-materials">Upload Materials</button>
+      <button onclick="openSettingsModal()" id="nav-settings">Settings</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Dashboard View -->
+    <div id="view-dashboard" class="view active">
+      <h2>Welcome to EduCards</h2>
+      <p class="subtitle">Collaborate, practice, and master your subjects.</p>
+      
+      <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+        <button class="btn" onclick="switchView('decks')">Explore Study Decks</button>
+        <button class="btn btn-secondary" onclick="openGenModal()">Generate with AI </button>
+      </div>
+
+      <div class="panel">
+        <h3>Recent Decks</h3>
+        <div id="dashboard-decks-grid" class="card-grid">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Decks View -->
+    <div id="view-decks" class="view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h2>Study Decks</h2>
+          <p class="subtitle" style="margin-bottom: 0;">Create or practice collections of flashcards and MCQs.</p>
+        </div>
+        <button class="btn" onclick="openGenModal()">+ Gen AI Deck</button>
+      </div>
+      
+      <div id="decks-grid" class="card-grid">
+        <!-- Loaded dynamically -->
+      </div>
+    </div>
+
+    <!-- Materials (RAG) View -->
+    <div id="view-materials" class="view">
+      <h2>Syllabus & Study Materials</h2>
+      <p class="subtitle">Upload lecture notes, syllabi (PDF or TXT), and EduCards will ground AI flashcard generation in your coursework.</p>
+
+      <div class="panel" style="max-width: 600px;">
+        <h3>Upload New Material</h3>
+        <form id="upload-form" onsubmit="uploadMaterial(event)">
+          <div class="form-group">
+            <label for="material-file">Select PDF or Text File</label>
+            <input type="file" id="material-file" accept=".pdf,.txt" required>
+          </div>
+          <button type="submit" class="btn">Upload </button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h3>Indexed Materials</h3>
+        <div id="materials-list">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Practice View -->
+    <div id="view-practice" class="view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 id="practice-deck-title">Practice Deck</h2>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button class="btn" id="btn-mindmap" onclick="openMindmap()">Mindmap</button>
+          <button class="btn btn-secondary" id="btn-settings-practice" onclick="openSettingsModal()" title="Study Settings">⚙️ Settings</button>
+          <button class="btn btn-secondary" onclick="switchView('decks')">&larr; Back to Decks</button>
+        </div>
+      </div>
+
+      <div class="practice-container">
+        <div id="practice-progress" class="badge">Card 1 of 5</div>
+        
+        <div id="flashcard-container" class="flashcard-box" onclick="handleCardClick()">
+          <div id="fc-question" class="flashcard-question">Loading question...</div>
+          <div id="fc-answer-container" style="display: none; width: 100%;">
+            <div id="fc-comparison" class="fc-comparison-grid">
+              <div id="fc-attempt-wrapper" class="fc-attempt-box">
+                <span class="fc-label">Your Attempt</span>
+                <p id="fc-user-attempt" class="fc-attempt-text"></p>
+              </div>
+              <div class="fc-answer-box">
+                <span class="fc-label">Correct Answer</span>
+                <p id="fc-answer" class="flashcard-answer"></p>
+              </div>
+            </div>
+          </div>
+          <div id="fc-hint-text" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">(Click card or &#39;Flip Card&#39; to reveal answer)</div>
+        </div>
+
+        <!-- Recall Gate Controls (Active Recall) -->
+        <div id="recall-gate" class="recall-gate-box">
+          <label for="recall-input" class="recall-label">Type your recall attempt before flipping:</label>
+          <div class="recall-input-group">
+            <input type="text" id="recall-input" placeholder="Type what you remember..." oninput="handleRecallInput(this.value)" onkeydown="handleRecallKeydown(event)" autocomplete="off">
+            <button type="button" id="btn-dont-know" class="btn btn-secondary" onclick="handleDontKnow()">I don't know</button>
+            <button type="button" id="btn-flip" class="btn" onclick="flipFlashcard()" disabled>Flip Card</button>
+          </div>
+        </div>
+
+        <div id="mcq-container" style="display: none;">
+          <div id="mcq-question" class="flashcard-question" style="text-align: left; margin-bottom: 1rem;">Question</div>
+          <div id="mcq-options" class="mcq-options"></div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+          <button class="btn btn-secondary" onclick="prevCard()">&larr; Previous</button>
+          <button class="btn" onclick="nextCard()">Next Card &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Gen AI Deck Generation Modal -->
+  <div id="gen-modal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeGenModal()">&times;</button>
+      <h3>Generate Deck with AI </h3>
+      <form id="gen-form" onsubmit="generateDeck(event)">
+        <div class="form-group">
+          <label for="gen-topic">Topic or Subject</label>
+          <input type="text" id="gen-topic" placeholder="e.g. Quantum Physics, Cellular Respiration" required>
+        </div>
+        <div class="form-group">
+          <label for="gen-type">Card Type</label>
+          <select id="gen-type">
+            <option value="flashcard">Flashcards Only</option>
+            <option value="mcq">Multiple Choice Questions (MCQ)</option>
+            <option value="mixed">Mixed (Flashcards & MCQ)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="gen-count">Number of Cards</label>
+          <input type="number" id="gen-count" value="10" min="1" max="50">
+        </div>
+        <div class="form-group">
+          <label for="gen-material">Syllabus Material (Optional)</label>
+          <select id="gen-material">
+            <option value="">-- Use General Knowledge / All Materials --</option>
+          </select>
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">Generate Study Deck</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Adaptive AI Explainer Modal -->
+  <div id="explainer-modal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeExplainerModal()">&times;</button>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+        <span class="badge" style="background: #FFE4E6; color: #881337; margin-bottom: 0;">Incorrect Answer Analysis</span>
+        <span id="tutor-round-badge" class="badge" style="background: #CCFBF1; color: #134E4A; margin-bottom: 0;">Discussion Round 1 of 3</span>
+      </div>
+      <h3 id="explainer-question-title">Explanation</h3>
+      <p id="explainer-summary" style="margin-bottom: 1rem; color: var(--text-secondary);"></p>
+      
+      <div class="form-group">
+        <label for="understanding-level">Select Your Understanding Level:</label>
+        <select id="understanding-level" onchange="restartConversation()">
+          <option value="ELI5">ELI5 (Explain like I'm 5)</option>
+          <option value="Beginner" selected>Beginner / Student</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced Expert</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <button id="hint-btn" class="btn" onclick="requestNextHint()">Give me a hint</button>
+      </div>
+
+      <div class="panel" style="background: #F8FAFC; margin-bottom: 1rem; padding: 1.25rem;">
+        <strong style="display: block; margin-bottom: 0.5rem; color: var(--primary);">AI Tutor:</strong>
+        <div id="tutor-dialogue-container" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 240px; overflow-y: auto;">
+          <div id="explainer-text" style="color: var(--text-primary); margin: 0; white-space: pre-wrap;">Click &quot;Give me a hint&quot; or start discussion below.</div>
+        </div>
+      </div>
+
+      <!-- Learner reply text box -->
+      <div id="tutor-reply-section">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="learner-reply-input" style="font-size: 0.85rem; color: var(--text-secondary);">Your reply to the tutor:</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="learner-reply-input" placeholder="Type your answer or thought..." onkeydown="if(event.key==='Enter') sendLearnerReply()">
+            <button type="button" id="btn-send-reply" class="btn" onclick="sendLearnerReply()">Reply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explain-it-back Section -->
+      <div id="explain-it-back-container" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+        <h4 style="margin-bottom: 0.5rem; color: var(--primary);">Explain it back in your own words:</h4>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+          To solidify your understanding, restate this concept. The AI tutor will review what you got right and what you can refine.
+        </p>
+        <div id="restatement-input-section">
+          <textarea id="learner-restatement" rows="3" placeholder="Restate what you learned in your own words..." style="width: 100%; box-sizing: border-box; margin-bottom: 0.5rem;"></textarea>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button type="button" id="btn-submit-restatement" class="btn" onclick="submitRestatement()">Submit for Feedback</button>
+            <button type="button" id="btn-skip-restatement" class="btn btn-secondary" onclick="skipRestatement()">Skip this step</button>
+          </div>
+        </div>
+        <div id="restatement-skipped-msg" style="display: none; color: var(--text-secondary); font-size: 0.9rem; margin: 0.5rem 0;"><em>Explain-it-back step skipped.</em></div>
+        <div id="restatement-feedback-box" style="display: none; margin-top: 1rem; padding: 1rem; background: #EEF2FF; border-left: 4px solid #6366F1; border-radius: 6px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mindmap Modal -->
+  <div id="mindmap-modal" class="modal">
+    <div class="modal-content" style="max-width: 800px; width: 95%;">
+      <button class="close-btn" onclick="closeMindmapModal()">&times;</button>
+      <h3 id="mindmap-title">Deck Mindmap</h3>
+      <div id="mindmap-container" style="width: 100%; min-height: 460px; display: flex; align-items: center; justify-content: center; overflow: auto;">
+        <p style="color: var(--text-secondary);">Loading mindmap...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Study Settings Modal -->
+  <div id="settings-modal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeSettingsModal()">&times;</button>
+      <h3>Study Settings</h3>
+      <div class="settings-list">
+        <div class="setting-item">
+          <div class="setting-info">
+            <strong>Think First (Active Recall)</strong>
+            <p class="subtitle" style="margin-bottom: 0;">Require typing a recall attempt or tapping &quot;I don't know&quot; before flipping flashcards.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="setting-think-first" checked onchange="toggleThinkFirst(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=20261022fix2"></script>
+</body>
+</html>
