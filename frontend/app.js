@@ -64,9 +64,19 @@ function renderDecks() {
         <p>${deck.description}</p>
         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">🃏 ${deck.cards.length} Cards &bull; By ${deck.creator}</p>
       </div>
-      <div style="display: flex; gap: 0.5rem;">
+
+
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
         <button class="btn" onclick="startPractice('${deck.id}')" style="flex: 1;">Practice</button>
         <button class="btn btn-secondary" onclick="openMindmapForDeck('${deck.id}')">Mindmap</button>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 0.65rem;">
+        <button
+          class="btn btn-danger"
+          onclick="deleteDeck('${deck.id}')"
+          style="padding: 0.45rem 0.8rem;"
+        >Delete deck</button>
       </div>
     </div>
   `).join("");
@@ -75,6 +85,43 @@ function renderDecks() {
   if (dashGrid) dashGrid.innerHTML = html;
 }
 
+async function deleteDeck(deckId) {
+  const deck = currentDecks.find(item => item.id === deckId);
+  const deckTitle = deck ? deck.title : "this deck";
+
+  const confirmed = window.confirm(
+    `Are you sure you want to delete "${deckTitle}"?\n\nThis action cannot be undone.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/decks/${encodeURIComponent(deckId)}`,
+      { method: "DELETE" }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.detail || `Delete failed (${response.status})`
+      );
+    }
+
+    currentDecks = currentDecks.filter(
+      item => item.id !== deckId
+    );
+
+    renderDecks();
+
+    window.alert(`"${deckTitle}" has been deleted successfully.`);
+  } catch (error) {
+    console.error("Failed to delete deck:", error);
+    window.alert(`Could not delete deck: ${error.message}`);
+  }
+}
 async function loadMaterials() {
   try {
     const res = await fetch("/api/materials");

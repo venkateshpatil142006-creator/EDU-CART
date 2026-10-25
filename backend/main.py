@@ -74,6 +74,24 @@ def get_deck(deck_id: str):
             return d
     raise HTTPException(status_code=404, detail="Deck not found")
 
+@app.delete("/api/decks/{deck_id}")
+def delete_deck(deck_id: str):
+    decks = load_decks()
+
+    for index, deck in enumerate(decks):
+        if deck.id == deck_id:
+            decks.pop(index)
+            save_decks(decks)
+            return {
+                "message": "Deck deleted successfully",
+                "deck_id": deck_id
+            }
+
+    raise HTTPException(
+        status_code=404,
+        detail="Deck not found"
+    )
+
 @app.post("/api/decks/{deck_id}/cards", response_model=Card)
 def add_card_to_deck(deck_id: str, card_data: dict):
     decks = load_decks()
