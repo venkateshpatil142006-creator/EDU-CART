@@ -13,7 +13,7 @@ EduCards is a collaborative, AI-powered study assistant designed to help student
 5. **Learner Profiles and Leaderboard:** Track accuracy, points, streaks, completed decks, and topics to review.
 6. **Learning Analytics:** Explore personal and aggregate trends, response times, activity, and question difficulty with generated charts.
 7. **Session Overview:** Review strengths, weak areas, missed answers, hints used, and next steps after finishing a deck.
-8. **Clean, Modern UI:** Built with Vanilla HTML5, CSS3 (solid colors, CSS variables, zero-gradient minimal aesthetic), and Vanilla JavaScript.
+8. **Developer-style UI:** A dark, monospace practice experience with a persistent light-theme option, keyboard shortcuts, and a circular progress indicator.
 
 ---
 
@@ -22,7 +22,7 @@ EduCards is a collaborative, AI-powered study assistant designed to help student
 - **Backend:** Python 3.10+, FastAPI, Pydantic v2, Uvicorn, Google GenAI SDK (`google-genai`), PyPDF
 - **Frontend:** HTML5, CSS3, Vanilla JavaScript (ES6+)
 - **Analytics:** pandas, NumPy, Matplotlib (Agg/non-interactive rendering)
-- **Storage:** SQLite (`data/educards.sqlite3` by default), with one-time import from legacy JSON files
+- **Storage:** PostgreSQL when `DATABASE_URL` is configured; otherwise SQLite (`data/educards.sqlite3` by default), with imports from legacy JSON and optional one-time SQLite-to-PostgreSQL migration
 - **Testing:** Pytest, HTTPX
 
 ---
@@ -109,15 +109,22 @@ Open **http://127.0.0.1:8000**. API documentation is available at **http://127.0
 |---|---|---|
 | `GEMINI_API_KEY` | No | Real AI deck generation, explanations, and feedback. Without it, mock/fallback responses are used. |
 | `GROQ_API_KEY` | No | Real AI mindmap generation. Without it, a mock mindmap is returned. |
-| `EDUCART_DB_PATH` | No | SQLite file path; defaults to `data/educards.sqlite3` locally and `/tmp/educards.sqlite3` on Vercel/Lambda. |
+| `DATABASE_URL` | No | PostgreSQL connection URL. When set, PostgreSQL is used instead of SQLite. |
+| `POSTGRES_URL` | No | Alias used when `DATABASE_URL` is not set. |
+| `EDUCART_DB_PATH` | No | SQLite file path; defaults to `data/educards.sqlite3` locally and `/tmp/educards.sqlite3` on Vercel/Lambda. Also used as the default SQLite source for PostgreSQL migration. |
+| `EDUCART_SQLITE_MIGRATION_PATH` | No | Explicit SQLite database file to copy into PostgreSQL once. |
 
 To configure keys, copy `.env.example` to `.env` and fill in your keys. `run.sh` and `run.bat` load `.env` when present. Never commit `.env` or share your API keys. You can run and present the project without either key.
 
 ### Data storage
 
-Application data is stored in SQLite. Set `EDUCART_DB_PATH` to choose another database file. On first startup, EduCards imports valid MCQs from the legacy `data/decks.json` file and materials from `data/materials.json`; legacy flashcards and invalid MCQs are discarded. The JSON files remain as import sources and are not used for ongoing writes. Run `python -m backend.seed` to safely seed the ten built-in subject decks.
+Application data uses PostgreSQL when `DATABASE_URL` (or `POSTGRES_URL`) is set; otherwise it is stored in SQLite. Set `EDUCART_DB_PATH` to choose another SQLite file. When PostgreSQL is selected, startup copies any existing SQLite database at `EDUCART_SQLITE_MIGRATION_PATH` (or `EDUCART_DB_PATH`, or the default local database path) once; existing PostgreSQL rows are preserved on conflicts. Set a PostgreSQL connection URL before launching the app to use the hosted database.
 
-Vercel's `/tmp` directory is ephemeral and is wiped on cold starts. EduCards can use `/tmp/educards.sqlite3` there, but data stored in it will not persist across cold starts; configure a hosted database for persistent users, scores, decks, or materials.
+On first startup, EduCards imports valid MCQs from the legacy `data/decks.json` file and materials from `data/materials.json`; legacy flashcards and invalid MCQs are discarded. The JSON files remain as import sources and are not used for ongoing writes. Run `python -m backend.seed` to safely seed the ten built-in subject decks.
+
+Vercel's `/tmp` directory is ephemeral and is wiped on cold starts. SQLite data stored at `/tmp/educards.sqlite3` will not persist across cold starts; configure a hosted PostgreSQL database for persistent users, scores, decks, or materials.
+
+During practice, press **1–4** to select an option and **Enter** to move on after answering. Use the header control to switch between dark and light themes; the preference is saved in localStorage. The dark theme is the default.
 
 Learners choose a username on first visit. The browser stores only the generated user ID in localStorage; there are no passwords. Usernames are unique without regard to capitalization.
 

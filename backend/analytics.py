@@ -1,9 +1,7 @@
 import base64
 import io
-import sqlite3
 import threading
 import time
-from pathlib import Path
 from typing import Dict, Optional
 
 import matplotlib
@@ -14,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from backend.storage import database_path
+from backend.storage import analytics_cache_key, connect_analytics
 
 
 _CACHE_TTL_SECONDS = 60
@@ -24,12 +22,7 @@ _plot_lock = threading.Lock()
 
 
 def _read_attempts() -> pd.DataFrame:
-    path = database_path()
-    if path == ":memory:":
-        connection = sqlite3.connect(path)
-    else:
-        uri = Path(path).expanduser().resolve().as_uri() + "?mode=ro"
-        connection = sqlite3.connect(uri, uri=True)
+    connection = connect_analytics()
     try:
         return pd.read_sql(
             """
@@ -54,17 +47,23 @@ def _png_data_uri(figure) -> str:
     return "data:image/png;base64," + base64.b64encode(image.getvalue()).decode("ascii")
 
 
-def _chart(title: str, xlabel: str, ylabel: str):
+def _chart(title: str, xlabel: str, ylabel: str, theme: str = "dark"):
+    dark = theme == "dark"
+    figure_bg = "#0b1117" if dark else "#f3f6f8"
+    axes_bg = "#111b24" if dark else "#ffffff"
+    text = "#dce6ef" if dark else "#0f172a"
+    secondary = "#91a4b6" if dark else "#475569"
+    grid = "#293a48" if dark else "#e2e8f0"
     figure, axis = plt.subplots(figsize=(7, 3.6))
-    figure.patch.set_facecolor("#f8fafc")
-    axis.set_facecolor("#ffffff")
-    axis.set_title(title, color="#0f172a", fontsize=12, weight="bold")
-    axis.set_xlabel(xlabel, color="#475569")
-    axis.set_ylabel(ylabel, color="#475569")
-    axis.tick_params(colors="#475569")
+    figure.patch.set_facecolor(figure_bg)
+    axis.set_facecolor(axes_bg)
+    axis.set_title(title, color=text, fontsize=12, weight="bold")
+    axis.set_xlabel(xlabel, color=secondary)
+    axis.set_ylabel(ylabel, color=secondary)
+    axis.tick_params(colors=secondary)
     for spine in axis.spines.values():
-        spine.set_color("#cbd5e1")
-    axis.grid(axis="y", color="#e2e8f0", linewidth=0.8, alpha=0.8)
+        spine.set_color(grid)
+    axis.grid(axis="y", color=grid, linewidth=0.8, alpha=0.8)
     return figure, axis
 
 
@@ -74,50 +73,59 @@ def _render_charts(
     learning_curve: pd.DataFrame,
     response_times: pd.Series,
     points: Optional[pd.Series] = None,
+    theme: str = "dark",
 ) -> Dict[str, str]:
     charts = {}
-    figure, axis = _chart("Accuracy by subject", "Subject", "Accuracy (%)")
+    bar_color = "#37c9a5" if theme == "dark" else "#0d9488"
+    figure, axis = _chart("Accuracy by subject", "Subject", "Accuracy (%)", theme)
     if not accuracy_by_subject.empty:
         axis.bar(
             accuracy_by_subject["subject"],
             accuracy_by_subject["accuracy"],
-            color="#0d9488",
+            color=bar_color,
         )
         axis.set_ylim(0, 100)
         axis.tick_params(axis="x", labelrotation=25)
     charts["accuracy_by_subject"] = _png_data_uri(figure)
 
-    figure, axis = _chart("Learning curve", "Attempt", "Cumulative accuracy (%)")
+    figure, axis = _chart("Learning curve", "Attempt", "Cumulative accuracy (%)", theme)
     if not learning_curve.empty:
         x = learning_curve["attempt"].to_numpy(dtype=float)
         y = learning_curve["accuracy"].to_numpy(dtype=float)
-        axis.plot(x, y, color="#0d9488", marker="o", markersize=3, label="Accuracy")
+        axis.plot(x, y, color=bar_color, marker="o", markersize=3, label="Accuracy")
         if len(x) >= 2:
             slope, intercept = np.polyfit(x, y, 1)
-            axis.plot(x, slope * x + intercept, color="#e11d48", linestyle="--", label="Trend")
-            axis.legend(frameon=False)
+            axis.plot(
+                x, slope * x + intercept,
+                color="#fb7185" if theme == "dark" else "#e11d48",
+                linestyle="--", label="Trend",
+            )
+            axis.legend(
+                frameon=False,
+                labelcolor="#dce6ef" if theme == "dark" else "#0f172a",
+            )
         axis.set_ylim(0, 100)
     charts["learning_curve"] = _png_data_uri(figure)
 
-    figure, axis = _chart("Daily activity", "Day", "Attempts")
+    figure, axis = _chart("Daily activity", "Day", "Attempts", theme)
     if not daily_activity.empty:
         axis.bar(
             daily_activity["day"].astype(str),
             daily_activity["attempts"],
-            color="#0d9488",
+            color=bar_color,
         )
         axis.tick_params(axis="x", labelrotation=25)
     charts["daily_activity"] = _png_data_uri(figure)
 
-    figure, axis = _chart("Response time distribution", "Response time (seconds)", "Attempts")
+    figure, axis = _chart("Response time distribution", "Response time (seconds)", "Attempts", theme)
     if not response_times.empty:
-        axis.hist(response_times / 1000, bins=min(12, max(3, len(response_times))), color="#0d9488")
+        axis.hist(response_times / 1000, bins=min(12, max(3, len(response_times))), color=bar_color)
     charts["response_time_distribution"] = _png_data_uri(figure)
 
     if points is not None:
-        figure, axis = _chart("Points distribution", "Points", "Learners")
+        figure, axis = _chart("Points distribution", "Points", "Learners", theme)
         if not points.empty:
-            axis.hist(points, bins=min(12, max(3, len(points))), color="#0d9488")
+            axis.hist(points, bins=min(12, max(3, len(points))), color=bar_color)
         charts["points_distribution"] = _png_data_uri(figure)
     return charts
 
@@ -128,6 +136,7 @@ def _make_charts(
     learning_curve: pd.DataFrame,
     response_times: pd.Series,
     points: Optional[pd.Series] = None,
+    theme: str = "dark",
 ) -> Dict[str, str]:
     with _plot_lock:
         return _render_charts(
@@ -136,10 +145,11 @@ def _make_charts(
             learning_curve,
             response_times,
             points,
+            theme,
         )
 
 
-def _empty_personal_result(user_id: str) -> dict:
+def _empty_personal_result(user_id: str, theme: str = "dark") -> dict:
     empty = pd.DataFrame()
     return {
         "user_id": user_id,
@@ -154,14 +164,21 @@ def _empty_personal_result(user_id: str) -> dict:
         "response_time_ms_percentiles": {"p50": None, "p90": None, "p95": None},
         "learning_curve_trend_slope": 0.0,
         "weak_cards": [],
-        "charts": _make_charts(empty, empty, empty, pd.Series(dtype=float)),
+        "charts": _make_charts(
+            empty, empty, empty, pd.Series(dtype=float), theme=theme
+        ),
     }
 
 
-def analyze_personal_attempts(attempts: pd.DataFrame, user_id: str, all_attempts: Optional[pd.DataFrame] = None) -> dict:
+def analyze_personal_attempts(
+    attempts: pd.DataFrame,
+    user_id: str,
+    all_attempts: Optional[pd.DataFrame] = None,
+    theme: str = "dark",
+) -> dict:
     personal = attempts.loc[attempts["user_id"] == user_id].copy()
     if personal.empty:
-        return _empty_personal_result(user_id)
+        return _empty_personal_result(user_id, theme)
 
     personal["created_at"] = pd.to_datetime(personal["created_at"], utc=True, errors="coerce")
     personal["day"] = personal["created_at"].dt.date.astype(str)
@@ -233,6 +250,7 @@ def analyze_personal_attempts(attempts: pd.DataFrame, user_id: str, all_attempts
         daily,
         learning_curve,
         valid_times,
+        theme=theme,
     )
     return {
         "user_id": user_id,
@@ -251,7 +269,7 @@ def analyze_personal_attempts(attempts: pd.DataFrame, user_id: str, all_attempts
     }
 
 
-def analyze_global_attempts(attempts: pd.DataFrame) -> dict:
+def analyze_global_attempts(attempts: pd.DataFrame, theme: str = "dark") -> dict:
     if attempts.empty:
         empty = pd.DataFrame()
         return {
@@ -260,7 +278,9 @@ def analyze_global_attempts(attempts: pd.DataFrame) -> dict:
             "hardest_questions": [],
             "most_active_days": [],
             "points_distribution": [],
-            "charts": _make_charts(empty, empty, empty, pd.Series(dtype=float), pd.Series(dtype=float)),
+            "charts": _make_charts(
+                empty, empty, empty, pd.Series(dtype=float), pd.Series(dtype=float), theme
+            ),
         }
     data = attempts.copy()
     data["created_at"] = pd.to_datetime(data["created_at"], utc=True, errors="coerce")
@@ -298,6 +318,7 @@ def analyze_global_attempts(attempts: pd.DataFrame) -> dict:
             pd.DataFrame(),
             pd.to_numeric(data["time_taken_ms"], errors="coerce").dropna(),
             points,
+            theme,
         ),
     }
 
@@ -318,24 +339,24 @@ def _cached(key: str):
     return None
 
 
-def get_personal_analytics(user_id: str) -> dict:
-    key = f"me:{database_path()}:{user_id}"
+def get_personal_analytics(user_id: str, theme: str = "dark") -> dict:
+    key = f"me:{analytics_cache_key()}:{user_id}:{theme}"
     cached = _cached(key)
     if cached is not None:
         return cached
     attempts = _read_attempts()
-    result = analyze_personal_attempts(attempts, user_id, attempts)
+    result = analyze_personal_attempts(attempts, user_id, attempts, theme)
     with _cache_lock:
         _cache[key] = (time.monotonic(), result)
     return result
 
 
-def get_global_analytics() -> dict:
-    key = f"global:{database_path()}"
+def get_global_analytics(theme: str = "dark") -> dict:
+    key = f"global:{analytics_cache_key()}:{theme}"
     cached = _cached(key)
     if cached is not None:
         return cached
-    result = analyze_global_attempts(_read_attempts())
+    result = analyze_global_attempts(_read_attempts(), theme)
     with _cache_lock:
         _cache[key] = (time.monotonic(), result)
     return result

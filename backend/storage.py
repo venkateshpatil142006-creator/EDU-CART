@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import random
 import sqlite3
 import uuid
@@ -12,10 +13,69 @@ from pydantic import ValidationError
 
 from backend.models import Card, Deck, DeckOverview, Material
 
+try:
+    import psycopg2
+
+    _INTEGRITY_ERRORS = (sqlite3.IntegrityError, psycopg2.IntegrityError)
+except ImportError:
+    _INTEGRITY_ERRORS = (sqlite3.IntegrityError,)
+
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 LEGACY_DECKS_FILE = DEFAULT_DATA_DIR / "decks.json"
 LEGACY_MATERIALS_FILE = DEFAULT_DATA_DIR / "materials.json"
+
+
+class _PostgresConnection:
+    def __init__(self, connection):
+        self._connection = connection
+
+    def execute(self, query, parameters=()):
+        query = _postgres_query(query)
+        cursor = self._connection.cursor()
+        cursor.execute(query, parameters)
+        return cursor
+
+    def executescript(self, script):
+        for statement in script.split(";"):
+            if statement.strip():
+                self.execute(statement)
+
+    def commit(self):
+        self._connection.commit()
+
+    def rollback(self):
+        self._connection.rollback()
+
+    def close(self):
+        self._connection.close()
+
+
+def _postgres_query(query: str) -> str:
+    query = query.replace("BEGIN IMMEDIATE", "BEGIN")
+    query = query.replace(
+        "username TEXT NOT NULL COLLATE NOCASE UNIQUE",
+        "username TEXT NOT NULL UNIQUE",
+    )
+    query = query.replace("username = ? COLLATE NOCASE", "LOWER(username) = LOWER(?)")
+    query = query.replace(
+        "title = ? COLLATE NOCASE AND category = ? COLLATE NOCASE",
+        "LOWER(title) = LOWER(?) AND LOWER(category) = LOWER(?)",
+    )
+    query = query.replace("INSERT OR IGNORE INTO", "INSERT INTO")
+    query = re.sub(
+        r"ORDER BY (?P<alias>a\.)?rowid DESC",
+        lambda match: (
+            f"ORDER BY {match.group('alias') or ''}created_at DESC, "
+            f"{match.group('alias') or ''}id DESC"
+        ),
+        query,
+    )
+    query = query.replace("ORDER BY a.rowid", "ORDER BY a.created_at, a.id")
+    query = query.replace("ORDER BY rowid", "ORDER BY id")
+    if "INSERT INTO materials" in query and "ON CONFLICT" not in query:
+        query = query.rstrip().rstrip(";") + " ON CONFLICT DO NOTHING"
+    return query.replace("?", "%s")
 
 
 def database_path() -> str:
@@ -27,15 +87,125 @@ def database_path() -> str:
     return str(DEFAULT_DATA_DIR / "educards.sqlite3")
 
 
-def _connect() -> sqlite3.Connection:
+def database_url() -> Optional[str]:
+    return os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")
+
+
+def analytics_cache_key() -> str:
+    import hashlib
+
+    identity = database_url() or database_path()
+    return hashlib.sha256(identity.encode("utf-8")).hexdigest()
+
+
+def connect_analytics():
+    url = database_url()
+    if url:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+
+        return psycopg2.connect(url, cursor_factory=RealDictCursor)
     path = database_path()
-    if path != ":memory:":
-        Path(path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(path, timeout=30, isolation_level=None)
-    connection.row_factory = sqlite3.Row
-    connection.execute("PRAGMA foreign_keys = ON")
-    connection.execute("PRAGMA busy_timeout = 30000")
+    if path == ":memory:":
+        return sqlite3.connect(path)
+    return sqlite3.connect(path)
+
+
+def _migrate_local_sqlite(connection) -> None:
+    if not isinstance(connection, _PostgresConnection):
+        return
+    marker = connection.execute(
+        "SELECT value FROM app_meta WHERE key = ?", ("sqlite_to_postgres_migrated",)
+    ).fetchone()
+    if marker:
+        return
+    source_path = Path(
+        os.environ.get(
+            "EDUCART_SQLITE_MIGRATION_PATH",
+            os.environ.get("EDUCART_DB_PATH", str(DEFAULT_DATA_DIR / "educards.sqlite3")),
+        )
+    ).expanduser()
+    if not source_path.is_file():
+        return
+
+    source = sqlite3.connect(source_path)
+    source.row_factory = sqlite3.Row
+    try:
+        connection.execute("BEGIN")
+        for table in (
+            "app_meta",
+            "users",
+            "decks",
+            "cards",
+            "materials",
+            "deck_sessions",
+            "attempts",
+        ):
+            exists = source.execute(
+                "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+                (table,),
+            ).fetchone()
+            if not exists:
+                continue
+            source_columns = {
+                row["name"] for row in source.execute(f"PRAGMA table_info({table})")
+            }
+            target_columns = {
+                row["column_name"]
+                for row in connection.execute(
+                    """
+                    SELECT column_name FROM information_schema.columns
+                    WHERE table_schema = current_schema() AND table_name = ?
+                    """,
+                    (table,),
+                ).fetchall()
+            }
+            columns = sorted(source_columns & target_columns)
+            if not columns:
+                continue
+            quoted_columns = ", ".join(columns)
+            placeholders = ", ".join("?" for _ in columns)
+            sql = (
+                f"INSERT INTO {table} ({quoted_columns}) VALUES ({placeholders}) "
+                "ON CONFLICT DO NOTHING"
+            )
+            for row in source.execute(f"SELECT {quoted_columns} FROM {table}"):
+                connection.execute(sql, tuple(row[column] for column in columns))
+        connection.execute(
+            """
+            INSERT INTO app_meta (key, value)
+            VALUES (?, ?)
+            ON CONFLICT DO NOTHING
+            """,
+            ("sqlite_to_postgres_migrated", "1"),
+        )
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        source.close()
+
+
+def _connect():
+    url = database_url()
+    if url:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+
+        raw_connection = psycopg2.connect(url, cursor_factory=RealDictCursor)
+        raw_connection.autocommit = True
+        connection = _PostgresConnection(raw_connection)
+    else:
+        path = database_path()
+        if path != ":memory:":
+            Path(path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
+        connection = sqlite3.connect(path, timeout=30, isolation_level=None)
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA foreign_keys = ON")
+        connection.execute("PRAGMA busy_timeout = 30000")
     _create_schema(connection)
+    _migrate_local_sqlite(connection)
     _import_legacy_decks(connection)
     _import_legacy_materials(connection)
     return connection
@@ -50,7 +220,7 @@ def _connection():
         connection.close()
 
 
-def _create_schema(connection: sqlite3.Connection) -> None:
+def _create_schema(connection) -> None:
     connection.executescript(
         """
         CREATE TABLE IF NOT EXISTS app_meta (
@@ -62,6 +232,8 @@ def _create_schema(connection: sqlite3.Connection) -> None:
             username TEXT NOT NULL COLLATE NOCASE UNIQUE,
             created_at TEXT NOT NULL
         );
+        CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_idx
+            ON users(LOWER(username));
         CREATE TABLE IF NOT EXISTS decks (
             id TEXT PRIMARY KEY,
             title TEXT NOT NULL,
@@ -419,7 +591,7 @@ def create_user(username: str) -> Dict[str, str]:
                 (user["id"], user["username"], user["created_at"]),
             )
             connection.commit()
-        except sqlite3.IntegrityError as exc:
+        except _INTEGRITY_ERRORS as exc:
             connection.rollback()
             raise ValueError("That username is already taken") from exc
     return user
@@ -467,7 +639,7 @@ def create_deck_session(user_id: str, deck_id: str) -> Dict:
                 """,
                 (session["id"], user_id, deck_id, session["started_at"]),
             )
-        except sqlite3.IntegrityError as exc:
+        except _INTEGRITY_ERRORS as exc:
             raise ValueError("User or deck not found") from exc
     return session
 
@@ -647,13 +819,13 @@ def record_attempt(payload: Dict) -> Dict:
             ),
         )
         total_points = connection.execute(
-            "SELECT COALESCE(SUM(points_awarded), 0) FROM attempts WHERE user_id = ?",
+            "SELECT COALESCE(SUM(points_awarded), 0) AS total_points FROM attempts WHERE user_id = ?",
             (payload["user_id"],),
-        ).fetchone()[0]
+        ).fetchone()["total_points"]
         session_points = connection.execute(
-            "SELECT COALESCE(SUM(points_awarded), 0) FROM attempts WHERE session_id = ?",
+            "SELECT COALESCE(SUM(points_awarded), 0) AS total_points FROM attempts WHERE session_id = ?",
             (payload["session_id"],),
-        ).fetchone()[0]
+        ).fetchone()["total_points"]
         connection.commit()
     return {
         "id": attempt_id,

@@ -279,15 +279,15 @@ def user_profile(user_id: str):
 
 
 @app.get("/api/analytics/me/{user_id}")
-def personal_analytics(user_id: str):
+def personal_analytics(user_id: str, theme: Literal["dark", "light"] = "dark"):
     if not get_user(user_id):
         raise HTTPException(status_code=404, detail="User not found")
-    return get_personal_analytics(user_id)
+    return get_personal_analytics(user_id, theme)
 
 
 @app.get("/api/analytics/global")
-def global_analytics():
-    return get_global_analytics()
+def global_analytics(theme: Literal["dark", "light"] = "dark"):
+    return get_global_analytics(theme)
 
 
 @app.post("/api/ai/explain", response_model=ExplainResponse)
