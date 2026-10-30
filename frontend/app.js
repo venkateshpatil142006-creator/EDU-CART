@@ -20,10 +20,10 @@ let practiceStartedAt = 0;
 let activeAnalyticsView = "me";
 let currentAnswerWasWrong = false;
 let practiceAdvanceTimer = null;
-let activeTheme = "dark";
+let activeTheme = "light";
 
 document.addEventListener("DOMContentLoaded", () => {
-  activeTheme = localStorage.getItem("educards_theme") === "light" ? "light" : "dark";
+  activeTheme = localStorage.getItem("educards_theme_v2") === "dark" ? "dark" : "light";
   applyTheme(activeTheme, false);
   document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
   document.addEventListener("keydown", handlePracticeShortcut);
@@ -52,7 +52,7 @@ function applyTheme(theme, refreshAnalytics = true) {
 
 function toggleTheme() {
   const nextTheme = activeTheme === "dark" ? "light" : "dark";
-  localStorage.setItem("educards_theme", nextTheme);
+  localStorage.setItem("educards_theme_v2", nextTheme);
   applyTheme(nextTheme);
 }
 
@@ -1286,10 +1286,10 @@ async function submitRestatement() {
       if (feedbackBox) {
         feedbackBox.style.display = "block";
         feedbackBox.innerHTML = `
-          <strong style="display: block; color: #4338CA; margin-bottom: 0.5rem;">AI Tutor Critique:</strong>
-          <p style="margin-bottom: 0.5rem; color: #1E1B4B; white-space: pre-wrap;">${escapeHtmlFeedback(data.feedback)}</p>
-          <div style="font-size: 0.85rem; color: #15803D; margin-bottom: 0.25rem;">&bull; <strong>What you got right:</strong> ${escapeHtmlFeedback(data.what_was_right)}</div>
-          <div style="font-size: 0.85rem; color: #B45309;">&bull; <strong>To refine:</strong> ${escapeHtmlFeedback(data.thing_to_refine)}</div>
+          <strong style="display: block; color: var(--accent); margin-bottom: 0.5rem;">AI Tutor Critique:</strong>
+          <p style="margin-bottom: 0.5rem; color: var(--text-primary); white-space: pre-wrap;">${escapeHtmlFeedback(data.feedback)}</p>
+          <div style="font-size: 0.85rem; color: var(--correct-text); margin-bottom: 0.25rem;">&bull; <strong>What you got right:</strong> ${escapeHtmlFeedback(data.what_was_right)}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">&bull; <strong>To refine:</strong> ${escapeHtmlFeedback(data.thing_to_refine)}</div>
         `;
       }
     } else {

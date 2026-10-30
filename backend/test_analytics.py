@@ -107,3 +107,12 @@ def test_empty_personal_analytics_has_chart_output_and_no_stats():
     assert result["rank"] is None
     assert result["response_time_ms_percentiles"]["p50"] is None
     assert all(value.startswith("data:image/png;base64,") for value in result["charts"].values())
+
+
+def test_analytics_charts_follow_requested_theme():
+    attempts = _attempts()
+
+    light = analyze_global_attempts(attempts, theme="light")
+    dark = analyze_global_attempts(attempts, theme="dark")
+
+    assert light["charts"]["accuracy_by_subject"] != dark["charts"]["accuracy_by_subject"]

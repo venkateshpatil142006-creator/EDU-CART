@@ -59,6 +59,40 @@ def _is_specific_question(question: str, topic: str) -> bool:
     }
 
 
+def _deck_generation_error(exc: Exception) -> RuntimeError:
+    message = str(exc).casefold()
+    status_code = getattr(exc, "code", None) or getattr(exc, "status_code", None)
+    if status_code in (401, 403) or any(
+        marker in message
+        for marker in (
+            "unauthenticated",
+            "api key not valid",
+            "access_token_type_unsupported",
+            "permission_denied",
+        )
+    ):
+        return RuntimeError(
+            "Gemini rejected the configured API key. Verify it is copied completely, "
+            "that the Generative Language API is enabled for its Google Cloud project, "
+            "and restart the server after updating .env."
+        )
+    if status_code == 429 or "resource_exhausted" in message or "rate limit" in message:
+        return RuntimeError(
+            "Gemini's request limit was reached. Wait briefly, then try generating the deck again."
+        )
+    if isinstance(exc, TimeoutError) or any(
+        marker in message for marker in ("timeout", "timed out", "deadline_exceeded")
+    ):
+        return RuntimeError("Gemini timed out while generating the deck. Please try again.")
+    if isinstance(exc, (ValueError, json.JSONDecodeError)):
+        return RuntimeError(
+            "Gemini did not return valid MCQ questions. Please try again or reduce the question count."
+        )
+    return RuntimeError(
+        "Gemini could not generate the deck. Check the server's Gemini configuration and try again."
+    )
+
+
 def generate_ai_deck(topic: str, card_type: str, count: int, materials: List[str]) -> Dict[str, Any]:
     api_key = os.environ.get("GEMINI_API_KEY")
     context = retrieve_relevant_context(topic, materials)
@@ -139,10 +173,9 @@ def generate_ai_deck(topic: str, card_type: str, count: int, materials: List[str
             data["cards"] = valid_cards[:max(1, min(count, 50))]
             return data
         except Exception as e:
-            print(f"Gemini API generation failed: {e}")
-            raise RuntimeError(
-                "Gemini could not produce a valid, topic-specific MCQ deck. Try a more specific topic or review the API key."
-            ) from e
+            safe_error = _deck_generation_error(e)
+            print(f"Gemini deck generation failed ({type(e).__name__}): {safe_error}")
+            raise safe_error from e
 
     # Offline question bank: useful, deterministic questions when no AI key is configured.
     # These are deliberately labelled as offline practice content, not live AI output.

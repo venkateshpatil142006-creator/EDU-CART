@@ -92,6 +92,48 @@ def test_gemini_invalid_mcqs_are_dropped(monkeypatch):
     assert "Avoid generic questions" in prompt
 
 
+def test_gemini_authentication_error_explains_how_to_fix_key(monkeypatch):
+    class GeminiAuthError(Exception):
+        code = 401
+
+    monkeypatch.setenv("GEMINI_API_KEY", "invalid-test-key")
+    mock_client = MagicMock()
+    mock_client.models.generate_content.side_effect = GeminiAuthError(
+        "401 UNAUTHENTICATED: API key not valid"
+    )
+    monkeypatch.setattr("backend.ai_service._gemini_client_for_key", lambda _: mock_client)
+
+    with pytest.raises(RuntimeError, match="rejected the configured API key") as error:
+        generate_ai_deck("photosynthesis", "mcq", 3, [])
+
+    assert "invalid-test-key" not in str(error.value)
+
+
+def test_aq_prefixed_google_key_is_passed_to_gemini(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "AQ.test-api-key")
+    response = MagicMock()
+    response.text = json.dumps({
+        "title": "Photosynthesis",
+        "description": "Photosynthesis MCQs",
+        "category": "Biology",
+        "cards": [{
+            "question": "Which molecule donates electrons to photosystem II?",
+            "answer": "Water",
+            "options": ["Water", "Oxygen", "Glucose", "Carbon dioxide"],
+            "explanation": "Water is split during the light-dependent reactions.",
+            "difficulty": "medium",
+        }],
+    })
+    mock_client = MagicMock()
+    mock_client.models.generate_content.return_value = response
+    monkeypatch.setattr("backend.ai_service._gemini_client_for_key", lambda key: mock_client)
+
+    result = generate_ai_deck("photosynthesis", "mcq", 1, [])
+
+    assert result["cards"][0]["answer"] == "Water"
+    mock_client.models.generate_content.assert_called_once()
+
+
 def test_deck_overview_without_api_key_uses_valid_deterministic_fallback(monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     data = {

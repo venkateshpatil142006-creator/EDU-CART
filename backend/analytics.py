@@ -47,13 +47,13 @@ def _png_data_uri(figure) -> str:
     return "data:image/png;base64," + base64.b64encode(image.getvalue()).decode("ascii")
 
 
-def _chart(title: str, xlabel: str, ylabel: str, theme: str = "dark"):
+def _chart(title: str, xlabel: str, ylabel: str, theme: str = "light"):
     dark = theme == "dark"
-    figure_bg = "#0b1117" if dark else "#f3f6f8"
+    figure_bg = "#0b1117" if dark else "#f8eef3"
     axes_bg = "#111b24" if dark else "#ffffff"
-    text = "#dce6ef" if dark else "#0f172a"
-    secondary = "#91a4b6" if dark else "#475569"
-    grid = "#293a48" if dark else "#e2e8f0"
+    text = "#dce6ef" if dark else "#334155"
+    secondary = "#91a4b6" if dark else "#718096"
+    grid = "#293a48" if dark else "#e2eaf0"
     figure, axis = plt.subplots(figsize=(7, 3.6))
     figure.patch.set_facecolor(figure_bg)
     axis.set_facecolor(axes_bg)
@@ -73,10 +73,10 @@ def _render_charts(
     learning_curve: pd.DataFrame,
     response_times: pd.Series,
     points: Optional[pd.Series] = None,
-    theme: str = "dark",
+    theme: str = "light",
 ) -> Dict[str, str]:
     charts = {}
-    bar_color = "#37c9a5" if theme == "dark" else "#0d9488"
+    bar_color = "#37c9a5" if theme == "dark" else "#79b7d5"
     figure, axis = _chart("Accuracy by subject", "Subject", "Accuracy (%)", theme)
     if not accuracy_by_subject.empty:
         axis.bar(
@@ -97,12 +97,12 @@ def _render_charts(
             slope, intercept = np.polyfit(x, y, 1)
             axis.plot(
                 x, slope * x + intercept,
-                color="#fb7185" if theme == "dark" else "#e11d48",
+                color="#fb7185" if theme == "dark" else "#d8788d",
                 linestyle="--", label="Trend",
             )
             axis.legend(
                 frameon=False,
-                labelcolor="#dce6ef" if theme == "dark" else "#0f172a",
+                labelcolor="#dce6ef" if theme == "dark" else "#334155",
             )
         axis.set_ylim(0, 100)
     charts["learning_curve"] = _png_data_uri(figure)
@@ -136,7 +136,7 @@ def _make_charts(
     learning_curve: pd.DataFrame,
     response_times: pd.Series,
     points: Optional[pd.Series] = None,
-    theme: str = "dark",
+    theme: str = "light",
 ) -> Dict[str, str]:
     with _plot_lock:
         return _render_charts(
@@ -149,7 +149,7 @@ def _make_charts(
         )
 
 
-def _empty_personal_result(user_id: str, theme: str = "dark") -> dict:
+def _empty_personal_result(user_id: str, theme: str = "light") -> dict:
     empty = pd.DataFrame()
     return {
         "user_id": user_id,
@@ -174,7 +174,7 @@ def analyze_personal_attempts(
     attempts: pd.DataFrame,
     user_id: str,
     all_attempts: Optional[pd.DataFrame] = None,
-    theme: str = "dark",
+    theme: str = "light",
 ) -> dict:
     personal = attempts.loc[attempts["user_id"] == user_id].copy()
     if personal.empty:
@@ -269,7 +269,7 @@ def analyze_personal_attempts(
     }
 
 
-def analyze_global_attempts(attempts: pd.DataFrame, theme: str = "dark") -> dict:
+def analyze_global_attempts(attempts: pd.DataFrame, theme: str = "light") -> dict:
     if attempts.empty:
         empty = pd.DataFrame()
         return {
@@ -339,7 +339,7 @@ def _cached(key: str):
     return None
 
 
-def get_personal_analytics(user_id: str, theme: str = "dark") -> dict:
+def get_personal_analytics(user_id: str, theme: str = "light") -> dict:
     key = f"me:{analytics_cache_key()}:{user_id}:{theme}"
     cached = _cached(key)
     if cached is not None:
@@ -351,7 +351,7 @@ def get_personal_analytics(user_id: str, theme: str = "dark") -> dict:
     return result
 
 
-def get_global_analytics(theme: str = "dark") -> dict:
+def get_global_analytics(theme: str = "light") -> dict:
     key = f"global:{analytics_cache_key()}:{theme}"
     cached = _cached(key)
     if cached is not None:

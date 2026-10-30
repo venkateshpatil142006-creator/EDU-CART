@@ -13,7 +13,7 @@ EduCards is a collaborative, AI-powered study assistant designed to help student
 5. **Learner Profiles and Leaderboard:** Track accuracy, points, streaks, completed decks, and topics to review.
 6. **Learning Analytics:** Explore personal and aggregate trends, response times, activity, and question difficulty with generated charts.
 7. **Session Overview:** Review strengths, weak areas, missed answers, hints used, and next steps after finishing a deck.
-8. **Developer-style UI:** A dark, monospace practice experience with a persistent light-theme option, keyboard shortcuts, and a circular progress indicator.
+8. **Soft pastel UI:** A blush-pink, pale-blue, and white palette with rounded, lightweight surfaces, plus a persistent dark-theme option, keyboard shortcuts, and a circular progress indicator.
 
 ---
 
@@ -116,6 +116,8 @@ Open **http://127.0.0.1:8000**. API documentation is available at **http://127.0
 
 To configure keys, copy `.env.example` to `.env` and fill in your keys. `run.sh` and `run.bat` load `.env` when present. Never commit `.env` or share your API keys. You can run and present the project without either key.
 
+Topic-specific AI deck generation requires a valid Gemini API key created in Google AI Studio. OAuth access tokens, service-account credentials, and placeholder strings are not accepted as `GEMINI_API_KEY`; restart the server after changing `.env`. Without a valid key, only supported built-in offline topics can generate decks.
+
 ### Data storage
 
 Application data uses PostgreSQL when `DATABASE_URL` (or `POSTGRES_URL`) is set; otherwise it is stored in SQLite. Set `EDUCART_DB_PATH` to choose another SQLite file. When PostgreSQL is selected, startup copies any existing SQLite database at `EDUCART_SQLITE_MIGRATION_PATH` (or `EDUCART_DB_PATH`, or the default local database path) once; existing PostgreSQL rows are preserved on conflicts. Set a PostgreSQL connection URL before launching the app to use the hosted database.
@@ -124,7 +126,7 @@ On first startup, EduCards imports valid MCQs from the legacy `data/decks.json` 
 
 Vercel's `/tmp` directory is ephemeral and is wiped on cold starts. SQLite data stored at `/tmp/educards.sqlite3` will not persist across cold starts; configure a hosted PostgreSQL database for persistent users, scores, decks, or materials.
 
-During practice, press **1–4** to select an option and **Enter** to move on after answering. Use the header control to switch between dark and light themes; the preference is saved in localStorage. The dark theme is the default.
+During practice, press **1–4** to select an option and **Enter** to move on after answering. Use the header control to switch between the default pink-and-blue theme and dark mode; the preference is saved in localStorage.
 
 Learners choose a username on first visit. The browser stores only the generated user ID in localStorage; there are no passwords. Usernames are unique without regard to capitalization.
 

@@ -1,12 +1,16 @@
 import os
 import random
 import uuid
+from pathlib import Path
 from typing import List, Literal, Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from backend.analytics import get_global_analytics, get_personal_analytics
 from backend.ai_service import (
@@ -279,14 +283,14 @@ def user_profile(user_id: str):
 
 
 @app.get("/api/analytics/me/{user_id}")
-def personal_analytics(user_id: str, theme: Literal["dark", "light"] = "dark"):
+def personal_analytics(user_id: str, theme: Literal["dark", "light"] = "light"):
     if not get_user(user_id):
         raise HTTPException(status_code=404, detail="User not found")
     return get_personal_analytics(user_id, theme)
 
 
 @app.get("/api/analytics/global")
-def global_analytics(theme: Literal["dark", "light"] = "dark"):
+def global_analytics(theme: Literal["dark", "light"] = "light"):
     return get_global_analytics(theme)
 
 
