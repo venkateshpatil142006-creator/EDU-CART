@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 import pytest
 from fastapi.testclient import TestClient
 from backend.main import app
-from backend.ai_service import _get_canned_explanation
+from backend.ai_service import _gemini_client_for_key, _get_canned_explanation
 
 client = TestClient(app)
 
@@ -29,6 +29,19 @@ def test_ai_explain_default_hint_level(monkeypatch):
     data = response.json()
     assert "Mitochondria" in data["explanation"]
     assert "The correct answer is 'Mitochondria'" in data["explanation"]
+
+
+def test_ai_explain_accepts_missing_user_answer(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    response = client.post("/api/ai/explain", json={
+        "question": "Which organelle produces most cellular ATP?",
+        "correct_answer": "Mitochondrion",
+        "understanding_level": "Beginner"
+    })
+
+    assert response.status_code == 200
+    assert "Mitochondrion" in response.json()["explanation"]
+
 
 @pytest.mark.parametrize("level", [1, 2, 3])
 def test_ai_explain_levels_no_correct_answer(monkeypatch, level):
@@ -84,12 +97,13 @@ def test_ai_explain_with_learner_attempt(monkeypatch):
 
 @pytest.mark.parametrize("level", [1, 2, 3])
 def test_ai_explain_leak_guard(monkeypatch, level):
+    _gemini_client_for_key.cache_clear()
     monkeypatch.setenv("GEMINI_API_KEY", "fake-gemini-key")
     mock_response = MagicMock()
     mock_response.text = "The secret is Mitochondria which powers everything."
     mock_client = MagicMock()
     mock_client.models.generate_content.return_value = mock_response
-    monkeypatch.setattr("google.genai.Client", lambda api_key: mock_client)
+    monkeypatch.setattr("google.genai.Client", lambda api_key, **kwargs: mock_client)
 
     question = "What is the powerhouse of the cell?"
     user_answer = "Nucleus"

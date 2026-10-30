@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EduCards - Collaborative Study Assistant</title>
-  <link rel="stylesheet" href="/static/style.css?v=20261022fix2">
+  <link rel="stylesheet" href="/static/style.css?v=20261030analytics1">
 </head>
 <body>
   <header>
@@ -13,7 +13,10 @@
       <button onclick="switchView('dashboard')" id="nav-dashboard" class="active">Dashboard</button>
       <button onclick="switchView('decks')" id="nav-decks">Study Decks</button>
       <button onclick="switchView('materials')" id="nav-materials">Upload Materials</button>
-      <button onclick="openSettingsModal()" id="nav-settings">Settings</button>
+      <button onclick="switchView('leaderboard')" id="nav-leaderboard">Leaderboard</button>
+      <button onclick="switchView('profile')" id="nav-profile">Profile</button>
+      <button onclick="switchView('analytics')" id="nav-analytics">Analytics</button>
+      <span id="current-user-label" class="user-label"></span>
     </nav>
   </header>
 
@@ -41,7 +44,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <div>
           <h2>Study Decks</h2>
-          <p class="subtitle" style="margin-bottom: 0;">Create or practice collections of flashcards and MCQs.</p>
+          <p class="subtitle" style="margin-bottom: 0;">Create or practice multiple-choice study decks.</p>
         </div>
         <button class="btn" onclick="openGenModal()">+ Gen AI Deck</button>
       </div>
@@ -54,7 +57,7 @@
     <!-- Materials (RAG) View -->
     <div id="view-materials" class="view">
       <h2>Syllabus & Study Materials</h2>
-      <p class="subtitle">Upload lecture notes, syllabi (PDF or TXT), and EduCards will ground AI flashcard generation in your coursework.</p>
+      <p class="subtitle">Upload lecture notes, syllabi (PDF or TXT), and EduCards will ground AI question generation in your coursework.</p>
 
       <div class="panel" style="max-width: 600px;">
         <h3>Upload New Material</h3>
@@ -81,51 +84,74 @@
         <h2 id="practice-deck-title">Practice Deck</h2>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
           <button class="btn" id="btn-mindmap" onclick="openMindmap()">Mindmap</button>
-          <button class="btn btn-secondary" id="btn-settings-practice" onclick="openSettingsModal()" title="Study Settings">⚙️ Settings</button>
           <button class="btn btn-secondary" onclick="switchView('decks')">&larr; Back to Decks</button>
         </div>
       </div>
 
       <div class="practice-container">
+        <div id="practice-active-content">
         <div id="practice-progress" class="badge">Card 1 of 5</div>
-        
-        <div id="flashcard-container" class="flashcard-box" onclick="handleCardClick()">
-          <div id="fc-question" class="flashcard-question">Loading question...</div>
-          <div id="fc-answer-container" style="display: none; width: 100%;">
-            <div id="fc-comparison" class="fc-comparison-grid">
-              <div id="fc-attempt-wrapper" class="fc-attempt-box">
-                <span class="fc-label">Your Attempt</span>
-                <p id="fc-user-attempt" class="fc-attempt-text"></p>
-              </div>
-              <div class="fc-answer-box">
-                <span class="fc-label">Correct Answer</span>
-                <p id="fc-answer" class="flashcard-answer"></p>
-              </div>
-            </div>
-          </div>
-          <div id="fc-hint-text" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">(Click card or &#39;Flip Card&#39; to reveal answer)</div>
+        <div class="practice-stats">
+          <span class="badge">Score: <strong id="practice-score">0</strong></span>
+          <span class="badge">Streak: <strong id="practice-streak">0</strong></span>
         </div>
-
-        <!-- Recall Gate Controls (Active Recall) -->
-        <div id="recall-gate" class="recall-gate-box">
-          <label for="recall-input" class="recall-label">Type your recall attempt before flipping:</label>
-          <div class="recall-input-group">
-            <input type="text" id="recall-input" placeholder="Type what you remember..." oninput="handleRecallInput(this.value)" onkeydown="handleRecallKeydown(event)" autocomplete="off">
-            <button type="button" id="btn-dont-know" class="btn btn-secondary" onclick="handleDontKnow()">I don't know</button>
-            <button type="button" id="btn-flip" class="btn" onclick="flipFlashcard()" disabled>Flip Card</button>
-          </div>
-        </div>
-
-        <div id="mcq-container" style="display: none;">
-          <div id="mcq-question" class="flashcard-question" style="text-align: left; margin-bottom: 1rem;">Question</div>
+        <div id="mcq-container">
+          <div id="mcq-question" class="question-text" style="text-align: left; margin-bottom: 1rem;">Question</div>
           <div id="mcq-options" class="mcq-options"></div>
         </div>
+        <p id="practice-status" class="subtitle" aria-live="polite"></p>
+        <div id="card-explanation" class="panel card-explanation" hidden></div>
+        <button id="learn-more-ai" class="btn btn-secondary" type="button">Learn more from AI</button>
 
         <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
           <button class="btn btn-secondary" onclick="prevCard()">&larr; Previous</button>
           <button class="btn" onclick="nextCard()">Next Card &rarr;</button>
         </div>
+        </div>
+        <div id="practice-results" class="panel practice-results" hidden>
+          <h3>Deck results</h3>
+          <div class="practice-results-stats">
+            <p>Accuracy: <strong id="result-accuracy"></strong></p>
+            <p>Points earned: <strong id="result-points"></strong></p>
+            <p>Time: <strong id="result-time"></strong></p>
+          </div>
+          <div id="overview-loading" class="subtitle" aria-live="polite">Preparing your AI overview...</div>
+          <div id="overview-content"></div>
+          <button id="review-mistakes" class="btn btn-secondary" type="button" hidden>Review my mistakes</button>
+          <button class="btn" type="button" onclick="switchView('decks')">Back to decks</button>
+        </div>
       </div>
+    </div>
+
+    <div id="view-leaderboard" class="view">
+      <h2>Leaderboard</h2>
+      <p class="subtitle">Compare practice points and accuracy with other learners.</p>
+      <div class="form-group leaderboard-filter">
+        <label for="leaderboard-period">Period</label>
+        <select id="leaderboard-period" onchange="loadLeaderboard()">
+          <option value="all">All time</option>
+          <option value="week">Last 7 days</option>
+        </select>
+      </div>
+      <div id="leaderboard-content" class="panel">Loading leaderboard...</div>
+    </div>
+
+    <div id="view-profile" class="view">
+      <h2>My Profile</h2>
+      <p id="profile-subtitle" class="subtitle"></p>
+      <div id="profile-content"></div>
+    </div>
+
+    <div id="view-analytics" class="view">
+      <h2>Learning Analytics</h2>
+      <p class="subtitle">Explore practice trends and class-wide learning patterns.</p>
+      <div class="analytics-tabs" role="tablist" aria-label="Analytics view">
+        <button id="analytics-tab-me" class="btn" type="button" role="tab" aria-selected="true">My Stats</button>
+        <button id="analytics-tab-global" class="btn btn-secondary" type="button" role="tab" aria-selected="false">Everyone</button>
+      </div>
+      <div id="analytics-summary" class="panel" aria-live="polite">Loading analytics...</div>
+      <div id="analytics-charts" class="analytics-grid"></div>
+      <div id="analytics-details" class="panel"></div>
     </div>
   </main>
 
@@ -138,14 +164,6 @@
         <div class="form-group">
           <label for="gen-topic">Topic or Subject</label>
           <input type="text" id="gen-topic" placeholder="e.g. Quantum Physics, Cellular Respiration" required>
-        </div>
-        <div class="form-group">
-          <label for="gen-type">Card Type</label>
-          <select id="gen-type">
-            <option value="flashcard">Flashcards Only</option>
-            <option value="mcq">Multiple Choice Questions (MCQ)</option>
-            <option value="mixed">Mixed (Flashcards & MCQ)</option>
-          </select>
         </div>
         <div class="form-group">
           <label for="gen-count">Number of Cards</label>
@@ -167,7 +185,7 @@
     <div class="modal-content">
       <button class="close-btn" onclick="closeExplainerModal()">&times;</button>
       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
-        <span class="badge" style="background: #FFE4E6; color: #881337; margin-bottom: 0;">Incorrect Answer Analysis</span>
+        <span id="tutor-context-badge" class="badge" style="background: #FFE4E6; color: #881337; margin-bottom: 0;">Question Explanation</span>
         <span id="tutor-round-badge" class="badge" style="background: #CCFBF1; color: #134E4A; margin-bottom: 0;">Discussion Round 1 of 3</span>
       </div>
       <h3 id="explainer-question-title">Explanation</h3>
@@ -186,6 +204,7 @@
       <div style="margin-bottom: 1rem;">
         <button id="hint-btn" class="btn" onclick="requestNextHint()">Give me a hint</button>
       </div>
+      <div id="hint-output" class="hint-output"></div>
 
       <div class="panel" style="background: #F8FAFC; margin-bottom: 1rem; padding: 1.25rem;">
         <strong style="display: block; margin-bottom: 0.5rem; color: var(--primary);">AI Tutor:</strong>
@@ -235,26 +254,21 @@
     </div>
   </div>
 
-  <!-- Study Settings Modal -->
-  <div id="settings-modal" class="modal">
+  <div id="identity-modal" class="modal identity-modal">
     <div class="modal-content">
-      <button class="close-btn" onclick="closeSettingsModal()">&times;</button>
-      <h3>Study Settings</h3>
-      <div class="settings-list">
-        <div class="setting-item">
-          <div class="setting-info">
-            <strong>Think First (Active Recall)</strong>
-            <p class="subtitle" style="margin-bottom: 0;">Require typing a recall attempt or tapping &quot;I don't know&quot; before flipping flashcards.</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="setting-think-first" checked onchange="toggleThinkFirst(this.checked)">
-            <span class="slider"></span>
-          </label>
+      <h3>Welcome to EduCards</h3>
+      <p class="subtitle">Choose a username to save your scores and appear on the leaderboard. No password is needed.</p>
+      <form onsubmit="registerUser(event)">
+        <div class="form-group">
+          <label for="username-input">Username</label>
+          <input id="username-input" type="text" minlength="1" maxlength="32" autocomplete="nickname" required>
         </div>
-      </div>
+        <p id="identity-error" class="error-message" aria-live="polite"></p>
+        <button class="btn" type="submit">Continue</button>
+      </form>
     </div>
   </div>
 
-  <script src="/static/app.js?v=20261022fix2"></script>
+  <script src="/static/app.js?v=20261030analytics1"></script>
 </body>
 </html>

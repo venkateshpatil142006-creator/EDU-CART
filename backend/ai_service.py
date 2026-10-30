@@ -1,8 +1,63 @@
 import os
 import json
+from functools import lru_cache
+import threading
+from collections import Counter
 from typing import List, Dict, Any, Optional
-from backend.models import Card, Deck
+from backend.models import Card, Deck, DeckOverview, ExplainResponse
 from backend.rag import retrieve_relevant_context
+from pydantic import ValidationError
+
+
+GEMINI_MODEL = "gemini-3.5-flash-lite"
+AI_REQUEST_TIMEOUT_MS = 10_000
+_explanation_cache: Dict[tuple[str, str, int], tuple[tuple, Dict[str, Any]]] = {}
+_explanation_cache_lock = threading.Lock()
+
+
+def _cache_explanation(key: tuple[str, str, int], context: tuple, result: Dict[str, Any]) -> None:
+    with _explanation_cache_lock:
+        _explanation_cache.pop(key, None)
+        _explanation_cache[key] = (context, dict(result))
+        while len(_explanation_cache) > 256:
+            _explanation_cache.pop(next(iter(_explanation_cache)))
+
+
+@lru_cache(maxsize=4)
+def _gemini_client_for_key(api_key: str):
+    from google import genai
+    from google.genai import types
+
+    return genai.Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(timeout=AI_REQUEST_TIMEOUT_MS),
+    )
+
+
+@lru_cache(maxsize=4)
+def _groq_client_for_key(api_key: str):
+    from groq import Groq
+
+    return Groq(api_key=api_key, timeout=AI_REQUEST_TIMEOUT_MS / 1000)
+
+
+def _is_specific_question(question: str, topic: str) -> bool:
+    normalized = " ".join(question.lower().split()).rstrip(" ?.")
+    normalized_topic = " ".join(topic.lower().split())
+    vague_prefixes = (
+        "what is the central purpose of ",
+        "what is the purpose of ",
+        "what is the main purpose of ",
+        "which statement best describes ",
+    )
+    if normalized.startswith(vague_prefixes):
+        return False
+    return normalized not in {
+        f"what is {normalized_topic}",
+        f"define {normalized_topic}",
+        f"what does {normalized_topic} mean",
+    }
+
 
 def generate_ai_deck(topic: str, card_type: str, count: int, materials: List[str]) -> Dict[str, Any]:
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -11,11 +66,20 @@ def generate_ai_deck(topic: str, card_type: str, count: int, materials: List[str
     # Try using Google GenAI SDK if key exists
     if api_key:
         try:
-            from google import genai
-            client = genai.Client(api_key=api_key)
+            client = _gemini_client_for_key(api_key)
             prompt = f"""
-            Generate a study deck about '{topic}' with {count} cards of type '{card_type}'.
-            Here is reference study material/syllabus context:
+            Create exactly {count} challenging, precise, non-repetitive multiple-choice questions
+            about the specific subject "{topic}". Avoid generic questions such as asking for the
+            subject's central purpose or broad definition. Every question must test a distinct,
+            concrete fact, procedure, relationship, or application and include enough detail to
+            have one unambiguous answer. Use plausible distractors and do not use trick wording.
+
+            Use the following retrieved coursework excerpts as the primary source. When excerpts
+            are present, ground each question in a specific detail from them; do not make a
+            question answerable from only the topic name. Never invent syllabus facts. If the
+            excerpts do not contain enough relevant detail, use established subject knowledge,
+            but keep each question specific to "{topic}".
+            Retrieved reference excerpts:
             {context}
             
             Return ONLY a valid JSON object with this exact structure:
@@ -25,17 +89,19 @@ def generate_ai_deck(topic: str, card_type: str, count: int, materials: List[str
               "category": "General",
               "cards": [
                 {{
-                  "type": "flashcard" or "mcq",
                   "question": "Question text",
-                  "answer": "Correct answer",
-                  "options": ["Option A", "Option B", "Option C", "Option D"] (required only for mcq, else omit or null),
-                  "explanation": "Detailed explanation of the correct answer"
+                  "answer": "Exact copy of one of the four options",
+                  "options": ["Option A", "Option B", "Option C", "Option D"],
+                  "explanation": "Short explanation of the correct answer",
+                  "difficulty": "easy, medium, or hard"
                 }}
               ]
             }}
+            Every card must have exactly four distinct, non-empty options. The answer must exactly
+            match one option, including capitalization and punctuation. Do not generate flashcards.
             """
             response = client.models.generate_content(
-                model="gemini-3.5-flash-lite",
+                model=GEMINI_MODEL,
                 contents=prompt,
             )
             text = (response.text or "").strip()
@@ -49,13 +115,34 @@ def generate_ai_deck(topic: str, card_type: str, count: int, materials: List[str
                 raise ValueError("Gemini returned no JSON object")
             data = json.loads(text[start:end + 1].strip())
             raw_cards = data.get("cards") if isinstance(data, dict) else None
-            valid_cards = [c for c in (raw_cards or []) if isinstance(c, dict) and str(c.get("question", "")).strip() and str(c.get("answer", "")).strip()]
+            valid_cards = []
+            for item in raw_cards or []:
+                if not isinstance(item, dict):
+                    continue
+                try:
+                    card = Card(
+                        deck_id="",
+                        type="mcq",
+                        question=item.get("question", ""),
+                        answer=item.get("answer", ""),
+                        options=item.get("options"),
+                        explanation=item.get("explanation"),
+                        difficulty=item.get("difficulty", "medium"),
+                    )
+                except (ValidationError, TypeError):
+                    continue
+                if not _is_specific_question(card.question, topic):
+                    continue
+                valid_cards.append(card.model_dump())
             if not valid_cards:
                 raise ValueError("Gemini response did not contain any valid question cards")
             data["cards"] = valid_cards[:max(1, min(count, 50))]
             return data
         except Exception as e:
-            print(f"Gemini API generation failed, falling back to mock: {e}")
+            print(f"Gemini API generation failed: {e}")
+            raise RuntimeError(
+                "Gemini could not produce a valid, topic-specific MCQ deck. Try a more specific topic or review the API key."
+            ) from e
 
     # Offline question bank: useful, deterministic questions when no AI key is configured.
     # These are deliberately labelled as offline practice content, not live AI output.
@@ -72,6 +159,16 @@ def generate_ai_deck(topic: str, card_type: str, count: int, materials: List[str
             ("What does `if __name__ == '__main__':` commonly indicate?", "Code intended to run when the file is executed directly.", "The condition is true when the module is run as the main program, not merely imported.", ["Code intended to run when the file is executed directly.", "The file is encrypted", "The code is always skipped", "The Python version is 2"]),
             ("Which data type represents True or False?", "bool", "The bool type has the two values True and False.", ["bool", "str", "float", "dict"]),
             ("What is a Python module?", "A Python file that can be imported.", "Modules help organize code and allow functions, classes, and variables to be reused.", ["A Python file that can be imported.", "A CPU core", "A database row", "A browser tab"]),
+        ],
+        "photosynthesis": [
+            ("Which molecule supplies carbon atoms for sugar synthesis during photosynthesis?", "Carbon dioxide.", "The Calvin cycle fixes carbon from CO2 into organic molecules.", ["Carbon dioxide.", "Oxygen gas.", "Nitrogen gas.", "Water vapor."]),
+            ("Which photosynthetic complex splits water and releases oxygen?", "Photosystem II.", "The oxygen-evolving complex associated with Photosystem II oxidizes water.", ["Photosystem II.", "Photosystem I.", "ATP synthase.", "RuBisCO."]),
+            ("What is the main role of chlorophyll in a leaf?", "Absorb light energy for photosynthesis.", "Chlorophyll pigments absorb photons that drive photosynthetic electron transfer.", ["Absorb light energy for photosynthesis.", "Store genetic information.", "Convert glucose into amino acids.", "Transport water through xylem."]),
+            ("Where does the Calvin cycle take place in a chloroplast?", "The stroma.", "The Calvin cycle enzymes are located in the chloroplast stroma.", ["The stroma.", "The thylakoid lumen.", "The outer membrane.", "The cytosol of a red blood cell."]),
+            ("What directly powers carbon fixation reactions in the Calvin cycle?", "ATP and NADPH from the light reactions.", "Light reactions provide ATP energy and NADPH reducing power for carbon fixation.", ["ATP and NADPH from the light reactions.", "Oxygen and starch.", "DNA and RNA.", "Sucrose and carbon monoxide."]),
+            ("What is the primary function of the electron transport chain in the light reactions?", "Build a proton gradient used to make ATP.", "Electron transfer contributes to proton movement into the thylakoid lumen.", ["Build a proton gradient used to make ATP.", "Directly assemble glucose in the thylakoid lumen.", "Break down RuBisCO into amino acids.", "Move carbon dioxide into the nucleus."]),
+            ("Which enzyme fixes carbon dioxide to RuBP in the Calvin cycle?", "RuBisCO.", "RuBisCO catalyzes the addition of CO2 to ribulose-1,5-bisphosphate.", ["RuBisCO.", "ATP synthase.", "DNA polymerase.", "Catalase."]),
+            ("What is the immediate three-carbon product formed after carbon fixation and reduction?", "G3P.", "The Calvin cycle produces glyceraldehyde-3-phosphate, which can be used to build sugars.", ["G3P.", "Oxygen.", "Acetyl-CoA.", "Lactic acid."]),
         ],
         "linux": [
             ("Which command prints the current working directory?", "pwd", "pwd displays the absolute path of the current directory.", ["pwd", "cd", "mkdir", "touch"]),
@@ -107,22 +204,28 @@ def generate_ai_deck(topic: str, card_type: str, count: int, materials: List[str
     }
     selected = next((items for key, items in banks.items() if key in topic_key or (key == "network" and "tcp/ip" in topic_key)), None)
     if not selected:
-        selected = [
-            (f"What is the central purpose of {topic}?", f"{topic} is studied to understand its core concepts, practical use, and limitations.", f"A good explanation of {topic} connects its definition to when and why it is used.", [f"Understand the core concepts of {topic}", "Ignore the problem being solved", "Avoid testing assumptions", "Use it without understanding it"]),
-            (f"How would you explain {topic} to a beginner?", f"Start with its definition, explain the main components, then give a practical example of {topic}.", "A clear explanation moves from the basic idea to components and then a concrete example.", ["Definition, components, and practical example", "Only advanced jargon", "A list of unrelated facts", "No examples or context"]),
-            (f"Why is it useful to learn {topic}?", f"It helps you reason about real problems where {topic} is applied.", "Understanding use cases and trade-offs makes it easier to apply a concept appropriately.", ["It helps solve relevant problems", "It removes the need to think", "It guarantees every solution is correct", "It makes testing unnecessary"]),
-            (f"What is a good way to revise {topic}?", "Use active recall, practice questions, and spaced repetition.", "Retrieving information from memory and revisiting it over time improves retention.", ["Active recall and spaced repetition", "Read once and never revisit", "Memorize headings only", "Skip practice"]),
-        ]
+        raise RuntimeError(
+            f"No curated offline questions are available for {topic!r}. Configure GEMINI_API_KEY or choose a seeded subject deck."
+        )
 
     cards = []
     for i in range(max(1, min(count, 50))):
         question, answer, explanation, options = selected[i % len(selected)]
-        # For longer decks, vary the prompt while keeping the underlying answer accurate.
         if i >= len(selected):
             question = f"Review: {question}"
-        kind = "mcq" if card_type == "mcq" or (card_type == "mixed" and i % 2 == 1) else "flashcard"
-        cards.append({"type": kind, "question": question, "answer": answer,
-                      "options": options if kind == "mcq" else None, "explanation": explanation})
+        choices = list(dict.fromkeys(options))
+        if answer not in choices:
+            choices = [answer, *choices[:3]]
+        if len(choices) != 4:
+            choices = [answer, *[f"Incorrect alternative {n}" for n in range(1, 4)]]
+        cards.append({
+            "type": "mcq",
+            "question": question,
+            "answer": answer,
+            "options": choices,
+            "explanation": explanation,
+            "difficulty": ("easy", "medium", "hard")[i % 3],
+        })
 
     return {
         "title": f"{topic.strip().title()} — Practice Deck",
@@ -140,7 +243,7 @@ HINT_INSTRUCTIONS = {
 
 def _get_canned_explanation(
     question: str,
-    user_answer: str,
+    user_answer: Optional[str],
     correct_answer: str,
     understanding_level: str,
     hint_level: int = 4
@@ -151,15 +254,20 @@ def _get_canned_explanation(
         return f"At a {understanding_level} level: Focus on the foundational concepts behind '{question}'. Recall the core rule or definition."
     elif hint_level == 3:
         return f"At a {understanding_level} level: Step 1: Break down '{question}' into its components and eliminate what doesn't fit."
+    if user_answer:
+        return (
+            f"At a {understanding_level} level: Your answer '{user_answer}' is not quite right. "
+            f"The correct answer is '{correct_answer}'. "
+            f"Here's why: '{correct_answer}' satisfies the conditions in '{question}'."
+        )
     return (
-        f"At a {understanding_level} level: Your answer '{user_answer}' is not quite right. "
-        f"The correct answer is '{correct_answer}'. "
-        f"Here's why: EduCards AI notes that '{correct_answer}' satisfies all conditions of the question '{question}'."
+        f"At a {understanding_level} level: The correct answer is '{correct_answer}'. "
+        f"It satisfies the conditions in '{question}'."
     )
 
 def generate_ai_explanation(
     question: str,
-    user_answer: str,
+    user_answer: Optional[str],
     correct_answer: str,
     understanding_level: str,
     hint_level: int = 4,
@@ -180,11 +288,31 @@ def generate_ai_explanation(
         round_count = 0
         is_full = (hint_level == 4)
 
+    cache_key = (question, understanding_level, hint_level)
+    cache_context = (
+        user_answer or "",
+        correct_answer,
+        learner_attempt or "",
+        json.dumps(
+            [
+                (
+                    turn.role if hasattr(turn, "role") else turn.get("role"),
+                    turn.content if hasattr(turn, "content") else turn.get("content"),
+                )
+                for turn in (history or [])
+            ],
+            ensure_ascii=False,
+        ),
+    )
+    with _explanation_cache_lock:
+        cached = _explanation_cache.get(cache_key)
+        if cached and cached[0] == cache_context:
+            return dict(cached[1])
+
     api_key = os.environ.get("GEMINI_API_KEY")
     if api_key:
         try:
-            from google import genai
-            client = genai.Client(api_key=api_key)
+            client = _gemini_client_for_key(api_key)
             if is_conversational:
                 formatted_history = "\n".join([
                     f"{t.role if hasattr(t, 'role') else t.get('role')}: {t.content if hasattr(t, 'content') else t.get('content')}"
@@ -216,17 +344,18 @@ def generate_ai_explanation(
                 {prompt_instruction}
                 """
             else:
+                user_answer = user_answer or ""
                 attempt_line = f"\nLearner's Attempt: {learner_attempt.strip()}" if (learner_attempt and learner_attempt.strip()) else ""
                 if hint_level == 4:
                     prompt = f"""
-                The student answered a study question incorrectly.
+                Explain the following study question at the requested level.
                 Question: {question}
-                Student's Answer: {user_answer}{attempt_line}
+                Student's Answer (if any): {user_answer or "Not provided"}{attempt_line}
                 Correct Answer: {correct_answer}
                 Target Understanding Level: {understanding_level} (e.g. ELI5 = Explain like I am 5, Beginner, Intermediate, Advanced)
                 
                 Provide a clear, encouraging explanation addressing:
-                1. Why the student's answer ({user_answer}) is incorrect.
+                1. If a student's answer is provided, why it is incorrect.
                 2. What the correct answer ({correct_answer}) is and why.
                 3. Explained tailored precisely to the '{understanding_level}' level.
                 """
@@ -244,18 +373,21 @@ def generate_ai_explanation(
                 Explain tailored precisely to the '{understanding_level}' level.
                 """
             response = client.models.generate_content(
-                model="gemini-3.5-flash-lite",
+                model=GEMINI_MODEL,
                 contents=prompt,
             )
             text = response.text.strip()
             if not is_conversational and 1 <= hint_level <= 3 and correct_answer and correct_answer.strip():
                 if correct_answer.strip().lower() in text.lower():
                     text = _get_canned_explanation(question, user_answer, correct_answer, understanding_level, hint_level)
-            return {
+            result = {
                 "explanation": text,
                 "is_full_explanation": is_full,
                 "turn_count": round_count
             }
+            result = ExplainResponse.model_validate(result).model_dump()
+            _cache_explanation(cache_key, cache_context, result)
+            return dict(result)
         except Exception as e:
             print(f"Gemini explain API failed, using fallback: {e}")
 
@@ -287,11 +419,184 @@ def generate_ai_explanation(
     else:
         explanation = _get_canned_explanation(question, user_answer, correct_answer, understanding_level, hint_level)
 
-    return {
+    result = {
         "explanation": explanation,
         "is_full_explanation": is_full,
         "turn_count": round_count
     }
+    return ExplainResponse.model_validate(result).model_dump()
+
+
+def build_deck_overview(data: Dict[str, Any]) -> Dict[str, Any]:
+    attempts = data["attempts"]
+    total = len(attempts)
+    correct = sum(bool(attempt["is_correct"]) for attempt in attempts)
+    wrong_attempts = [attempt for attempt in attempts if not attempt["is_correct"]]
+    mistake_counts: Dict[str, int] = {}
+    subject_counts: Dict[str, Dict[str, int]] = {}
+    for attempt in attempts:
+        subject = attempt["subject"]
+        stats = subject_counts.setdefault(subject, {"attempts": 0, "correct": 0})
+        stats["attempts"] += 1
+        stats["correct"] += int(bool(attempt["is_correct"]))
+        if not attempt["is_correct"]:
+            mistake_counts[subject] = mistake_counts.get(subject, 0) + 1
+
+    strengths = [
+        f"{subject}: {stats['correct']}/{stats['attempts']} correct"
+        for subject, stats in sorted(
+            subject_counts.items(),
+            key=lambda item: (
+                -(item[1]["correct"] / item[1]["attempts"]),
+                -item[1]["attempts"],
+                item[0],
+            ),
+        )[:3]
+        if stats["correct"]
+    ]
+    weak_areas = [
+        f"{subject}: {mistakes} missed answer{'s' if mistakes != 1 else ''}"
+        for subject, mistakes in sorted(
+            mistake_counts.items(), key=lambda item: (-item[1], item[0])
+        )[:5]
+    ]
+    mistake_review = [
+        {
+            "question": attempt["question"],
+            "your_answer": attempt["selected"],
+            "correct_answer": attempt["correct_answer"],
+            "why_you_may_have_erred": (
+                "Your selected option may have seemed plausible, but it did not match the concept tested."
+            ),
+            "tip": attempt.get("explanation") or "Review the key concept and compare it with each option.",
+        }
+        for attempt in wrong_attempts[:100]
+    ]
+    slowest = sorted(attempts, key=lambda attempt: attempt["time_taken_ms"], reverse=True)[:3]
+    hints_used = sum(attempt["hints_used"] for attempt in attempts)
+    summary = (
+        f"You answered {correct} of {total} recorded answers correctly "
+        f"({round(correct / total * 100, 1) if total else 0}% accuracy) and earned "
+        f"{data['session']['total_points']} points. You used {hints_used} hints. "
+        f"{len(wrong_attempts)} answers need review. The slowest question was "
+        f"'{slowest[0]['question']}' at {(slowest[0]['time_taken_ms'] / 1000):.1f} seconds."
+        if slowest else
+        f"You completed {total} recorded answers with {correct} correct and earned "
+        f"{data['session']['total_points']} points. You used {hints_used} hints."
+    )
+    overview = {
+        "summary": summary,
+        "strengths": strengths or ["Keep practicing to build a clear strength area."],
+        "weak_areas": weak_areas or ["No repeated weak topic was identified."],
+        "mistake_review": mistake_review,
+        "next_steps": [
+            "Review the explanation for each missed question.",
+            "Revisit the topic with the most missed answers before your next practice session.",
+        ] if wrong_attempts else [
+            "Try a harder deck to keep strengthening your understanding.",
+            "Return later and review these concepts to reinforce retention.",
+        ],
+    }
+    return DeckOverview.model_validate(overview).model_dump()
+
+
+def _validate_overview_mistakes(overview: DeckOverview, attempts: List[Dict[str, Any]]) -> bool:
+    wrong_attempts = [item for item in attempts if not item["is_correct"]][:100]
+    wrong_keys = Counter(
+        (item["question"], item["selected"], item["correct_answer"])
+        for item in wrong_attempts
+    )
+    review_keys = Counter(
+        (item["question"], item["your_answer"], item["correct_answer"])
+        for item in overview.mistake_review
+    )
+    return review_keys == wrong_keys
+
+
+def generate_deck_overview(data: Dict[str, Any]) -> Dict[str, Any]:
+    fallback = build_deck_overview(data)
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return fallback
+    try:
+        client = _gemini_client_for_key(api_key)
+        wrong_attempts = [
+            {
+                "question": item["question"],
+                "your_answer": item["selected"],
+                "correct_answer": item["correct_answer"],
+                "topic": item["subject"],
+                "explanation": item.get("explanation"),
+            }
+            for item in data["attempts"]
+            if not item["is_correct"]
+        ]
+        topics_with_mistakes = sorted(
+            {
+                topic: sum(1 for item in data["attempts"] if not item["is_correct"] and item["subject"] == topic)
+                for topic in {item["subject"] for item in data["attempts"]}
+            }.items(),
+            key=lambda item: (-item[1], item[0]),
+        )
+        slowest = sorted(
+            data["attempts"], key=lambda item: item["time_taken_ms"], reverse=True
+        )[:3]
+        context = {
+            "wrong_answers": wrong_attempts[:100],
+            "topics_with_most_mistakes": topics_with_mistakes,
+            "hints_used": sum(item["hints_used"] for item in data["attempts"]),
+            "slowest_questions": [
+                {
+                    "question": item["question"],
+                    "seconds": round(item["time_taken_ms"] / 1000, 1),
+                    "correct": bool(item["is_correct"]),
+                }
+                for item in slowest
+            ],
+            "deterministic_summary": fallback["summary"],
+        }
+        prompt = f"""
+Write a concise, supportive study-session overview based only on this JSON data:
+{json.dumps(context, ensure_ascii=False)}
+
+Return ONLY a JSON object with exactly these fields and types:
+{{
+  "summary": "string",
+  "strengths": ["string"],
+  "weak_areas": ["string"],
+  "mistake_review": [
+    {{
+      "question": "exact question from wrong_answers",
+      "your_answer": "exact your_answer from wrong_answers",
+      "correct_answer": "exact correct_answer from wrong_answers",
+      "why_you_may_have_erred": "short, nonjudgmental explanation",
+      "tip": "actionable study tip grounded in the supplied explanation"
+    }}
+  ],
+  "next_steps": ["string"]
+}}
+Every mistake_review entry must correspond exactly to a supplied wrong answer. Do not invent
+questions, answers, topics, scores, or learner behavior. Keep the output practical and concise.
+"""
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt,
+        )
+        text = (response.text or "").strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[-1]
+            if text.rstrip().endswith("```"):
+                text = text.rstrip()[:-3]
+        start, end = text.find("{"), text.rfind("}")
+        if start < 0 or end <= start:
+            raise ValueError("Gemini returned no overview JSON object")
+        overview = DeckOverview.model_validate_json(text[start:end + 1])
+        if not _validate_overview_mistakes(overview, data["attempts"]):
+            raise ValueError("Gemini overview included an answer not present in the session")
+        return overview.model_dump()
+    except Exception as error:
+        print(f"Gemini overview failed validation or generation; using deterministic overview: {error}")
+        return fallback
 
 def generate_mindmap(deck: Any) -> Dict[str, Any]:
     deck_title = getattr(deck, "title", None) or (deck.get("title") if isinstance(deck, dict) else "Study Deck")
@@ -325,12 +630,11 @@ def generate_mindmap(deck: Any) -> Dict[str, Any]:
     api_key = os.environ.get("GROQ_API_KEY")
     if api_key:
         try:
-            from groq import Groq
-            client = Groq(api_key=api_key)
+            client = _groq_client_for_key(api_key)
             card_list_text = "\n".join(f"- {front}" for front in card_fronts) if card_fronts else "No specific cards provided."
             prompt = f"""
 Generate a structured mindmap for the study deck '{deck_title}'.
-Here are the key flashcard questions/concepts from the deck:
+Here are the key MCQ questions/concepts from the deck:
 {card_list_text}
 
 Return ONLY a valid JSON object with this exact schema:
@@ -368,16 +672,32 @@ Return ONLY a valid JSON object with this exact schema:
                 isinstance(data, dict)
                 and "root" in data
                 and isinstance(data["root"], str)
+                and data["root"].strip()
                 and "nodes" in data
                 and isinstance(data["nodes"], list)
+                and len(data["nodes"]) <= 100
                 and "edges" in data
                 and isinstance(data["edges"], list)
+                and len(data["edges"]) <= 200
             ):
                 valid_nodes = all(
-                    isinstance(n, dict) and "id" in n and "label" in n for n in data["nodes"]
+                    isinstance(n, dict)
+                    and isinstance(n.get("id"), str)
+                    and n["id"].strip()
+                    and isinstance(n.get("label"), str)
+                    and n["label"].strip()
+                    and len(n["label"]) <= 500
+                    for n in data["nodes"]
                 )
+                node_ids = {node["id"] for node in data["nodes"] if isinstance(node, dict) and isinstance(node.get("id"), str)}
+                valid_nodes = valid_nodes and len(node_ids) == len(data["nodes"])
                 valid_edges = all(
-                    isinstance(e, dict) and "from" in e and "to" in e for e in data["edges"]
+                    isinstance(e, dict)
+                    and isinstance(e.get("from"), str)
+                    and isinstance(e.get("to"), str)
+                    and e["from"] in node_ids | {"root"}
+                    and e["to"] in node_ids | {"root"}
+                    for e in data["edges"]
                 )
                 if valid_nodes and valid_edges:
                     return data
@@ -391,8 +711,7 @@ def generate_ai_feedback(concept: str, correct_answer: str, learner_restatement:
     api_key = os.environ.get("GEMINI_API_KEY")
     if api_key:
         try:
-            from google import genai
-            client = genai.Client(api_key=api_key)
+            client = _gemini_client_for_key(api_key)
             prompt = f"""
             The student was taught the following concept and attempted to explain it back in their own words.
             Concept: {concept}
@@ -405,7 +724,7 @@ def generate_ai_feedback(concept: str, correct_answer: str, learner_restatement:
             IMPORTANT: Do not provide a model answer first. Directly address the student's restatement.
             """
             response = client.models.generate_content(
-                model="gemini-3.5-flash-lite",
+                model=GEMINI_MODEL,
                 contents=prompt,
             )
             text = response.text.strip()
@@ -427,4 +746,3 @@ def generate_ai_feedback(concept: str, correct_answer: str, learner_restatement:
         "what_was_right": f"You accurately described the core premise of {concept}.",
         "thing_to_refine": f"Double check the connection between your explanation and '{correct_answer}'."
     }
-

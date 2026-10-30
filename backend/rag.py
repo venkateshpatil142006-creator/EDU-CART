@@ -1,4 +1,6 @@
 import io
+import re
+import math
 from typing import List
 from pypdf import PdfReader
 
@@ -37,25 +39,32 @@ def chunk_text(text: str, chunk_size: int = 500) -> List[str]:
     return chunks if chunks else [text]
 
 def retrieve_relevant_context(query: str, materials_content: List[str], top_k: int = 3) -> str:
-    # Simple keyword/overlap retrieval for RAG
     if not materials_content:
         return ""
-    
-    query_words = set(query.lower().split())
+
+    stop_words = {"a", "an", "and", "for", "in", "of", "on", "or", "the", "to", "with"}
+    query_words = {
+        word for word in re.findall(r"[a-z0-9_+#.-]+", query.lower())
+        if word not in stop_words and len(word) > 1
+    }
+    if not query_words:
+        return ""
+
     scored_chunks = []
-    
+
     for content in materials_content:
         chunks = chunk_text(content)
         for chunk in chunks:
-            chunk_words = set(chunk.lower().split())
-            overlap = len(query_words.intersection(chunk_words))
-            scored_chunks.append((overlap, chunk))
-            
-    scored_chunks.sort(key=lambda x: x[0], reverse=True)
-    top_chunks = [c[1] for c in scored_chunks[:top_k] if c[0] > 0]
-    
-    if not top_chunks and materials_content:
-        # Fallback to first few chunks of first material
-        top_chunks = chunk_text(materials_content[0])[:top_k]
-        
-    return "\n---\n".join(top_chunks)
+            tokens = re.findall(r"[a-z0-9_+#.-]+", chunk.lower())
+            token_set = set(tokens)
+            overlap = query_words.intersection(token_set)
+            if not overlap:
+                continue
+            frequency = sum(tokens.count(word) for word in overlap)
+            coverage = len(overlap) / len(query_words)
+            phrase_bonus = 1 if query.lower() in chunk.lower() else 0
+            score = coverage + math.log1p(frequency) * 0.15 + phrase_bonus
+            scored_chunks.append((score, chunk))
+
+    scored_chunks.sort(key=lambda item: item[0], reverse=True)
+    return "\n---\n".join(chunk for _, chunk in scored_chunks[:top_k])
