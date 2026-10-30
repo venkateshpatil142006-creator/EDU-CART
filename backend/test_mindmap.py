@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 from backend.main import app
+from backend.ai_service import _groq_client_for_key
 
 client = TestClient(app)
 
@@ -21,9 +22,15 @@ def test_mindmap_fallback_no_key(monkeypatch):
     deck_id = res.json()["id"]
 
     card_res = client.post(f"/api/decks/{deck_id}/cards", json={
-        "type": "flashcard",
+        "type": "mcq",
         "question": "What is a Binary Search Tree?",
-        "answer": "A node-based binary tree data structure."
+        "answer": "A node-based binary tree data structure.",
+        "options": [
+            "A node-based binary tree data structure.",
+            "A first-in, first-out collection.",
+            "A mapping from keys to values.",
+            "A graph with no vertices."
+        ]
     })
     assert card_res.status_code == 200
 
@@ -38,6 +45,7 @@ def test_mindmap_fallback_no_key(monkeypatch):
     assert data["edges"][0]["to"] == data["nodes"][0]["id"]
 
 def test_mindmap_groq_mocked(monkeypatch):
+    _groq_client_for_key.cache_clear()
     monkeypatch.setenv("GROQ_API_KEY", "fake-groq-key")
 
     mock_json = '{"root": "Operating Systems", "nodes": [{"id": "n1", "label": "Processes"}, {"id": "n2", "label": "Threads"}], "edges": [{"from": "n1", "to": "n2"}]}'
@@ -48,7 +56,7 @@ def test_mindmap_groq_mocked(monkeypatch):
     mock_client = MagicMock()
     mock_client.chat.completions.create.return_value = mock_response
 
-    monkeypatch.setattr("groq.Groq", lambda api_key: mock_client)
+    monkeypatch.setattr("groq.Groq", lambda api_key, **kwargs: mock_client)
 
     res = client.post("/api/decks", json={
         "title": "Operating Systems",
@@ -71,11 +79,12 @@ def test_mindmap_groq_mocked(monkeypatch):
     assert data["edges"][0]["to"] == "n2"
 
 def test_mindmap_groq_failure_fallback(monkeypatch):
+    _groq_client_for_key.cache_clear()
     monkeypatch.setenv("GROQ_API_KEY", "fake-groq-key")
 
     mock_client = MagicMock()
     mock_client.chat.completions.create.side_effect = Exception("Groq rate limit exceeded")
-    monkeypatch.setattr("groq.Groq", lambda api_key: mock_client)
+    monkeypatch.setattr("groq.Groq", lambda api_key, **kwargs: mock_client)
 
     res = client.post("/api/decks", json={
         "title": "Network Protocols",
