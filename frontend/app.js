@@ -12,14 +12,21 @@ let currentQuestionHintsUsed = 0;
 let currentSessionPoints = 0;
 let currentStreak = 0;
 let completedCardIds = new Set();
+let answeredCardIds = new Set();
 let wrongCardIds = new Set();
 let sessionFinished = false;
 let reviewMode = false;
 let practiceStartedAt = 0;
 let activeAnalyticsView = "me";
 let currentAnswerWasWrong = false;
+let practiceAdvanceTimer = null;
+let activeTheme = "dark";
 
 document.addEventListener("DOMContentLoaded", () => {
+  activeTheme = localStorage.getItem("educards_theme") === "light" ? "light" : "dark";
+  applyTheme(activeTheme, false);
+  document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
+  document.addEventListener("keydown", handlePracticeShortcut);
   document.getElementById("learn-more-ai").addEventListener("click", openExplainerModal);
   document.getElementById("review-mistakes").addEventListener("click", reviewMistakes);
   document.getElementById("analytics-tab-me").addEventListener("click", () => showAnalytics("me"));
@@ -28,6 +35,48 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("dashboard-decks-grid").addEventListener("click", handleDeckAction);
   initializeUser();
 });
+
+function applyTheme(theme, refreshAnalytics = true) {
+  activeTheme = theme === "light" ? "light" : "dark";
+  document.body.dataset.theme = activeTheme;
+  const toggle = document.getElementById("theme-toggle");
+  if (toggle) {
+    const nextTheme = activeTheme === "dark" ? "light" : "dark";
+    toggle.textContent = `${nextTheme === "light" ? "Light" : "Dark"} mode`;
+    toggle.setAttribute("aria-label", `Switch to ${nextTheme} theme`);
+  }
+  if (refreshAnalytics && document.getElementById("view-analytics").classList.contains("active")) {
+    loadAnalytics(activeAnalyticsView);
+  }
+}
+
+function toggleTheme() {
+  const nextTheme = activeTheme === "dark" ? "light" : "dark";
+  localStorage.setItem("educards_theme", nextTheme);
+  applyTheme(nextTheme);
+}
+
+function handlePracticeShortcut(event) {
+  if (!document.getElementById("view-practice").classList.contains("active") ||
+      document.getElementById("practice-results").hidden === false ||
+      document.querySelector(".modal.active") ||
+      event.target.closest("input, textarea, select, [contenteditable='true']")) return;
+  if (/^[1-4]$/.test(event.key)) {
+    const option = document.querySelectorAll("#mcq-options .mcq-option")[Number(event.key) - 1];
+    if (option && !option.disabled) {
+      event.preventDefault();
+      option.click();
+    }
+    return;
+  }
+  if (event.key === "Enter") {
+    const options = [...document.querySelectorAll("#mcq-options .mcq-option")];
+    if (options.length && options.every(option => option.disabled)) {
+      event.preventDefault();
+      nextCard();
+    }
+  }
+}
 
 async function initializeUser() {
   const savedUserId = localStorage.getItem("educard_user_id");
@@ -49,6 +98,19 @@ async function initializeUser() {
     document.getElementById("identity-modal").classList.add("active");
   }
   await Promise.all([loadDecks(), loadMaterials()]);
+}
+
+function updateProgressRing() {
+  const ring = document.getElementById("practice-progress-ring");
+  const label = document.getElementById("progress-ring-label");
+  if (!ring || !currentDeck) return;
+  const total = reviewMode ? getPracticeCards().length : currentDeck.cards.length;
+  const completed = reviewMode ? currentCardIndex : answeredCardIds.size;
+  const percentage = total ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+  const progressCircle = ring.querySelector(".progress-ring-value");
+  if (progressCircle) progressCircle.style.strokeDashoffset = String(213.63 * (1 - percentage / 100));
+  ring.setAttribute("aria-valuenow", String(percentage));
+  if (label) label.textContent = `${percentage}%`;
 }
 
 function updateUserLabel() {
@@ -227,7 +289,7 @@ function renderMaterials() {
         <strong>📄 ${escapeHtml(m.filename)}</strong>
         <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Chunks: ${m.chunk_count} &bull; Uploaded: ${new Date(m.uploaded_at).toLocaleDateString()}</p>
       </div>
-      <span class="badge" style="background: #CCFBF1; color: #134E4A; margin-bottom: 0;">Indexed for RAG</span>
+      <span class="badge status-positive">Indexed for RAG</span>
     </div>
   `).join("");
 }
@@ -356,7 +418,10 @@ async function startPractice(deckId) {
   currentCardIndex = 0;
   currentSessionPoints = 0;
   currentStreak = 0;
+  clearTimeout(practiceAdvanceTimer);
+  practiceAdvanceTimer = null;
   completedCardIds = new Set();
+  answeredCardIds = new Set();
   wrongCardIds = new Set();
   reviewMode = false;
   practiceStartedAt = performance.now();
@@ -376,6 +441,7 @@ function renderCard() {
   const card = cards[currentCardIndex];
   document.getElementById("practice-progress").innerText =
     `${reviewMode ? "Mistake" : "Card"} ${currentCardIndex + 1} of ${cards.length}`;
+  updateProgressRing();
   document.getElementById("mcq-question").textContent = card.question;
   const optionsEl = document.getElementById("mcq-options");
   optionsEl.replaceChildren();
@@ -465,6 +531,8 @@ async function checkMcqAnswer(selected) {
     if (result.is_correct) {
       currentAnswerWasWrong = false;
       completedCardIds.add(card.id);
+      answeredCardIds.add(card.id);
+      updateProgressRing();
       document.getElementById("practice-status").textContent =
         `Correct! +${result.points_awarded} points${currentStreak >= 5 ? " · 1.5× streak bonus" : ""}`;
       const explanation = document.getElementById("card-explanation");
@@ -473,10 +541,11 @@ async function checkMcqAnswer(selected) {
       if (completedCardIds.size === currentDeck.cards.length) {
         await finishPracticeSession();
       } else {
-        currentAnswerWasWrong = true;
-        setTimeout(nextCard, 1000);
+        practiceAdvanceTimer = setTimeout(nextCard, 1000);
       }
     } else {
+      answeredCardIds.add(card.id);
+      updateProgressRing();
       wrongCardIds.add(card.id);
       document.getElementById("practice-status").textContent = "Not quite. Review the explanation, then try another option.";
       const explanation = document.getElementById("card-explanation");
@@ -609,6 +678,8 @@ function appendOverviewList(container, title, values) {
 
 function nextCard() {
   if (!currentDeck) return;
+  clearTimeout(practiceAdvanceTimer);
+  practiceAdvanceTimer = null;
   resetHintState();
   const cards = getPracticeCards();
   if (reviewMode && currentCardIndex + 1 >= cards.length) {
@@ -661,8 +732,8 @@ async function loadAnalytics(view) {
   }
   try {
     const url = view === "me"
-      ? `/api/analytics/me/${encodeURIComponent(currentUser.id)}`
-      : "/api/analytics/global";
+      ? `/api/analytics/me/${encodeURIComponent(currentUser.id)}?theme=${activeTheme}`
+      : `/api/analytics/global?theme=${activeTheme}`;
     const response = await fetch(url);
     const data = await response.json();
     if (!response.ok) throw new Error(data.detail || "Could not load analytics.");
@@ -862,8 +933,7 @@ function openExplainerModal() {
   const badgeEl = document.getElementById("tutor-round-badge");
   if (badgeEl) {
     badgeEl.innerText = "Discussion Round 1 of 3";
-    badgeEl.style.background = "#CCFBF1";
-    badgeEl.style.color = "#134E4A";
+    badgeEl.className = "badge status-positive";
   }
   const replySection = document.getElementById("tutor-reply-section");
   if (replySection) replySection.style.display = hasWrongAnswer ? "block" : "none";
@@ -927,16 +997,16 @@ function renderDialogue() {
   container.innerHTML = conversationHistory.map(msg => {
     if (msg.role === "user") {
       return `
-        <div style="align-self: flex-end; background: #EEF2FF; border-left: 3px solid #6366F1; padding: 0.6rem 0.85rem; border-radius: 6px; max-width: 85%; margin-left: auto;">
-          <strong style="font-size: 0.75rem; color: #4338CA; display: block; text-transform: uppercase;">You:</strong>
-          <span style="font-size: 0.95rem; color: #1E1B4B;">${escapeHtml(msg.content)}</span>
+        <div class="dialogue-message dialogue-user">
+          <strong>You:</strong>
+          <span>${escapeHtml(msg.content)}</span>
         </div>
       `;
     } else {
       return `
-        <div style="align-self: flex-start; background: #F8FAFC; border-left: 3px solid var(--accent); padding: 0.6rem 0.85rem; border-radius: 6px; max-width: 90%;">
-          <strong style="font-size: 0.75rem; color: var(--accent); display: block; text-transform: uppercase;">AI Tutor:</strong>
-          <span style="font-size: 0.95rem; color: var(--text-primary); white-space: pre-wrap;">${escapeHtml(msg.content)}</span>
+        <div class="dialogue-message dialogue-assistant">
+          <strong>AI Tutor:</strong>
+          <span>${escapeHtml(msg.content)}</span>
         </div>
       `;
     }
@@ -991,12 +1061,10 @@ async function fetchAiConversationalTurn() {
       if (badgeEl) {
         if (data.is_full_explanation) {
           badgeEl.innerText = "Full Explanation Reached";
-          badgeEl.style.background = "#DCFCE7";
-          badgeEl.style.color = "#166534";
+          badgeEl.className = "badge status-positive";
         } else {
           badgeEl.innerText = `Discussion Round ${(data.turn_count || 0) + 1} of 3`;
-          badgeEl.style.background = "#CCFBF1";
-          badgeEl.style.color = "#134E4A";
+          badgeEl.className = "badge status-positive";
         }
       }
 
@@ -1300,6 +1368,11 @@ async function openMindmap() {
 function renderMindmapSvg(data) {
   const container = document.getElementById("mindmap-container");
   if (!container) return;
+  const colors = getComputedStyle(document.body);
+  const surface = colors.getPropertyValue("--card-bg").trim();
+  const text = colors.getPropertyValue("--text-primary").trim();
+  const accent = colors.getPropertyValue("--accent").trim();
+  const border = colors.getPropertyValue("--border").trim();
 
   const width = 740;
   const height = 460;
@@ -1329,7 +1402,7 @@ function renderMindmapSvg(data) {
     const p1 = positions[edge.from];
     const p2 = positions[edge.to];
     if (p1 && p2) {
-      linesHtml += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#CBD5E1" stroke-width="2" />`;
+      linesHtml += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${border}" stroke-width="2" />`;
       connectedNodes.add(edge.to);
       connectedNodes.add(edge.from);
     }
@@ -1339,7 +1412,7 @@ function renderMindmapSvg(data) {
     if (!connectedNodes.has(node.id)) {
       const p = positions[node.id];
       if (p) {
-        linesHtml += `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#CBD5E1" stroke-width="2" />`;
+        linesHtml += `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="${border}" stroke-width="2" />`;
       }
     }
   });
@@ -1348,8 +1421,8 @@ function renderMindmapSvg(data) {
   const rootLabel = truncate(rootFull, 22);
   let nodesHtml = `
     <g class="mindmap-root-node">
-      <rect x="${cx - 95}" y="${cy - 24}" width="190" height="48" rx="8" fill="#0F172A" stroke="#0D9488" stroke-width="2" />
-      <text x="${cx}" y="${cy}" fill="#FFFFFF" font-size="13" font-weight="bold" text-anchor="middle" dominant-baseline="central">${escapeXml(rootLabel)}</text>
+      <rect x="${cx - 95}" y="${cy - 24}" width="190" height="48" rx="8" fill="${surface}" stroke="${accent}" stroke-width="2" />
+      <text x="${cx}" y="${cy}" fill="${text}" font-size="13" font-weight="bold" text-anchor="middle" dominant-baseline="central">${escapeXml(rootLabel)}</text>
       <title>${escapeXml(rootFull)}</title>
     </g>
   `;
@@ -1360,15 +1433,15 @@ function renderMindmapSvg(data) {
     const label = truncate(full, 20);
     nodesHtml += `
       <g class="mindmap-child-node">
-        <rect x="${p.x - 70}" y="${p.y - 20}" width="140" height="40" rx="6" fill="#FFFFFF" stroke="#0D9488" stroke-width="2" />
-        <text x="${p.x}" y="${p.y}" fill="#1E293B" font-size="11" font-weight="600" text-anchor="middle" dominant-baseline="central">${escapeXml(label)}</text>
+        <rect x="${p.x - 70}" y="${p.y - 20}" width="140" height="40" rx="6" fill="${surface}" stroke="${accent}" stroke-width="2" />
+        <text x="${p.x}" y="${p.y}" fill="${text}" font-size="11" font-weight="600" text-anchor="middle" dominant-baseline="central">${escapeXml(label)}</text>
         <title>${escapeXml(full)}</title>
       </g>
     `;
   });
 
   container.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" xmlns="http://www.w3.org/2000/svg" style="background: #F8FAFC; border-radius: 8px; border: 1px solid var(--border);">
+    <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" xmlns="http://www.w3.org/2000/svg" style="background: ${surface}; border-radius: 8px; border: 1px solid ${border};">
       <g class="edges">${linesHtml}</g>
       <g class="nodes">${nodesHtml}</g>
     </svg>

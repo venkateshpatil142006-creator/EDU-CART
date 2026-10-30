@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EduCards - Collaborative Study Assistant</title>
-  <link rel="stylesheet" href="/static/style.css?v=20261030analytics1">
+  <link rel="stylesheet" href="/static/style.css?v=20261030devtheme1">
 </head>
 <body>
   <header>
@@ -17,6 +17,7 @@
       <button onclick="switchView('profile')" id="nav-profile">Profile</button>
       <button onclick="switchView('analytics')" id="nav-analytics">Analytics</button>
       <span id="current-user-label" class="user-label"></span>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme">Light mode</button>
     </nav>
   </header>
 
@@ -90,7 +91,17 @@
 
       <div class="practice-container">
         <div id="practice-active-content">
-        <div id="practice-progress" class="badge">Card 1 of 5</div>
+        <div class="practice-progress-wrap">
+          <div class="progress-ring" id="practice-progress-ring" role="progressbar"
+               aria-label="Deck progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <svg viewBox="0 0 80 80" aria-hidden="true">
+              <circle class="progress-ring-track" cx="40" cy="40" r="34"></circle>
+              <circle class="progress-ring-value" cx="40" cy="40" r="34"></circle>
+            </svg>
+            <span id="progress-ring-label">0%</span>
+          </div>
+          <span id="practice-progress" class="badge">Card 1 of 5</span>
+        </div>
         <div class="practice-stats">
           <span class="badge">Score: <strong id="practice-score">0</strong></span>
           <span class="badge">Streak: <strong id="practice-streak">0</strong></span>
@@ -185,8 +196,8 @@
     <div class="modal-content">
       <button class="close-btn" onclick="closeExplainerModal()">&times;</button>
       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
-        <span id="tutor-context-badge" class="badge" style="background: #FFE4E6; color: #881337; margin-bottom: 0;">Question Explanation</span>
-        <span id="tutor-round-badge" class="badge" style="background: #CCFBF1; color: #134E4A; margin-bottom: 0;">Discussion Round 1 of 3</span>
+        <span id="tutor-context-badge" class="badge" style="background: var(--incorrect-bg); color: var(--incorrect-text); margin-bottom: 0;">Question Explanation</span>
+        <span id="tutor-round-badge" class="badge" style="background: var(--correct-bg); color: var(--correct-text); margin-bottom: 0;">Discussion Round 1 of 3</span>
       </div>
       <h3 id="explainer-question-title">Explanation</h3>
       <p id="explainer-summary" style="margin-bottom: 1rem; color: var(--text-secondary);"></p>
@@ -206,7 +217,7 @@
       </div>
       <div id="hint-output" class="hint-output"></div>
 
-      <div class="panel" style="background: #F8FAFC; margin-bottom: 1rem; padding: 1.25rem;">
+      <div class="panel" style="background: var(--subtle-bg); margin-bottom: 1rem; padding: 1.25rem;">
         <strong style="display: block; margin-bottom: 0.5rem; color: var(--primary);">AI Tutor:</strong>
         <div id="tutor-dialogue-container" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 240px; overflow-y: auto;">
           <div id="explainer-text" style="color: var(--text-primary); margin: 0; white-space: pre-wrap;">Click &quot;Give me a hint&quot; or start discussion below.</div>
@@ -238,7 +249,7 @@
           </div>
         </div>
         <div id="restatement-skipped-msg" style="display: none; color: var(--text-secondary); font-size: 0.9rem; margin: 0.5rem 0;"><em>Explain-it-back step skipped.</em></div>
-        <div id="restatement-feedback-box" style="display: none; margin-top: 1rem; padding: 1rem; background: #EEF2FF; border-left: 4px solid #6366F1; border-radius: 6px;"></div>
+        <div id="restatement-feedback-box" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--subtle-bg); border-left: 4px solid var(--accent); border-radius: 6px;"></div>
       </div>
     </div>
   </div>
@@ -269,6 +280,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=20261030analytics1"></script>
+  <script src="/static/app.js?v=20261030devtheme1"></script>
 </body>
 </html>
